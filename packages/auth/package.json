@@ -1,0 +1,26 @@
+{
+  "name": "@crowd-vibe/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@crowd-vibe/db": "*",
+    "@crowd-vibe/env": "*",
+    "@polar-sh/better-auth": "^1.6.4",
+    "@polar-sh/sdk": "^0.42.2",
+    "better-auth": "1.5.2",
+    "dotenv": "^17.2.2",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@crowd-vibe/config": "*",
+    "typescript": "^5"
+  }
+}

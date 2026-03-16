@@ -1,0 +1,3 @@
+{
+  "extends": "@crowd-vibe/config/tsconfig.base.json"
+}
