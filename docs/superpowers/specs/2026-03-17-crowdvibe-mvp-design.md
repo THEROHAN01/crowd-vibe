@@ -611,7 +611,7 @@ No sign-up. No email. No OAuth. One tap.
 - **Generates from:** canvas, fonts, screen resolution, WebGL, timezone, etc.
 - **Scoped to session:** `@@unique([sessionId, fingerprint])` — same phone = same GuestUser within a session
 - **Cross-session:** different GuestUser records. No tracking across sessions.
-- **Cookie:** `cv_guest`, httpOnly, sameSite strict, expires after 24 hours. The cookie value is HMAC-signed: `cv_guest=<guestId>.<hmac_signature>` using `BETTER_AUTH_SECRET` as the signing key. On every `guestProcedure` call, the server verifies the HMAC before trusting the guestId. This prevents cookie forgery — a user cannot impersonate another guest by guessing their CUID.
+- **Cookie:** `cv_guest`, httpOnly, sameSite lax (lax is required instead of strict because QR code scanning creates a cross-site navigation where strict cookies would not be sent), expires after 24 hours. The cookie value is HMAC-signed: `cv_guest=<guestId>.<hmac_signature>` using `BETTER_AUTH_SECRET` as the signing key. On every `guestProcedure` call, the server verifies the HMAC before trusting the guestId. This prevents cookie forgery — a user cannot impersonate another guest by guessing their CUID.
 - **Not bulletproof:** incognito windows get different fingerprints. But the effort-to-impact ratio (new incognito tab to get 5 more suggestions) makes abuse impractical in a casual venue setting.
 
 ---

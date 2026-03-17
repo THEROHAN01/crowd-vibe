@@ -22,6 +22,7 @@ packages/api/src/lib/cookie.ts                    — HMAC cookie signing/verifi
 packages/api/src/lib/rate-limiter.ts              — In-memory rate limiter (Map-based with TTL)
 packages/api/src/lib/join-code.ts                 — Join code generation (6-char alphanumeric)
 packages/api/src/lib/settings.ts                  — VenueSettings Zod schema with defaults
+packages/api/src/lib/queue-helpers.ts             — advanceQueue() helper (DRY: used by queue.next, queue.skip, vote.cast auto-skip)
 packages/api/src/music/types.ts                   — MusicTrack, SearchResult, PlayerData, MusicProvider interface
 packages/api/src/music/providers/youtube.ts       — YouTube Data API v3 implementation
 packages/api/src/music/providers/spotify.ts       — Spotify provider stub
@@ -408,11 +409,15 @@ interface RateLimitEntry {
 
 export class RateLimiter {
   private entries = new Map<string, RateLimitEntry>();
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private maxRequests: number,
     private windowMs: number
-  ) {}
+  ) {
+    // Sweep expired entries every 5 minutes to prevent unbounded memory growth
+    this.cleanupTimer = setInterval(() => this.sweep(), 5 * 60 * 1000);
+  }
 
   check(key: string): { allowed: boolean; remaining: number } {
     const now = Date.now();
@@ -429,6 +434,13 @@ export class RateLimiter {
 
     entry.count++;
     return { allowed: true, remaining: this.maxRequests - entry.count };
+  }
+
+  private sweep() {
+    const now = Date.now();
+    for (const [key, entry] of this.entries) {
+      if (now >= entry.resetAt) this.entries.delete(key);
+    }
   }
 }
 ```
@@ -476,11 +488,92 @@ export function parseVenueSettings(raw: unknown): VenueSettings {
 }
 ```
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Create advanceQueue helper**
+
+Create `packages/api/src/lib/queue-helpers.ts`:
+
+```typescript
+import prisma from "@crowd-vibe/db";
+import { channelManager } from "../sse/channel-manager";
+import { getMusicProvider } from "../music/index";
+
+/**
+ * Marks the current playing song with the given status, picks the next
+ * queued song by score, marks it as playing, and broadcasts the change.
+ * Wrapped in a $transaction to prevent race conditions.
+ *
+ * Returns the next song and playerData, or null if the queue is empty.
+ */
+export async function advanceQueue(
+  sessionId: string,
+  musicProvider: string,
+  markCurrentAs: "played" | "skipped" = "played"
+) {
+  const result = await prisma.$transaction(async (tx) => {
+    // Mark current playing song
+    await tx.song.updateMany({
+      where: { sessionId, status: "playing" },
+      data: { status: markCurrentAs, playedAt: new Date() },
+    });
+
+    // Pick next by score, tiebreak by addedAt
+    const nextSong = await tx.song.findFirst({
+      where: { sessionId, status: "queued" },
+      orderBy: [{ score: "desc" }, { addedAt: "asc" }],
+      include: { suggestedBy: { select: { displayName: true } } },
+    });
+
+    if (nextSong) {
+      await tx.song.update({
+        where: { id: nextSong.id },
+        data: { status: "playing", playedAt: new Date() },
+      });
+    }
+
+    return nextSong;
+  });
+
+  // Broadcast outside the transaction
+  if (result) {
+    const provider = getMusicProvider(musicProvider);
+    const playerData = provider.getPlayerData(result.providerId);
+
+    channelManager.broadcast(sessionId, {
+      type: "now_playing",
+      data: {
+        song: {
+          id: result.id,
+          providerId: result.providerId,
+          provider: result.provider,
+          title: result.title,
+          artist: result.artist,
+          thumbnailUrl: result.thumbnailUrl,
+          durationMs: result.durationMs,
+          status: "playing",
+          score: result.score,
+          addedAt: result.addedAt.toISOString(),
+          suggestedBy: result.suggestedBy,
+        },
+      },
+    });
+
+    return { song: result, playerData };
+  }
+
+  channelManager.broadcast(sessionId, {
+    type: "now_playing",
+    data: { song: null },
+  });
+
+  return { song: null, playerData: null };
+}
+```
+
+- [ ] **Step 6: Commit**
 
 ```bash
 git add packages/api/src/lib/
-git commit -m "feat: add shared utilities (HMAC cookie, rate limiter, join code, settings)"
+git commit -m "feat: add shared utilities (HMAC cookie, rate limiter, join code, settings, queue helper)"
 ```
 
 ---
@@ -892,6 +985,8 @@ export class SearchCache {
 
   constructor(ttlMinutes: number = 15) {
     this.ttlMs = ttlMinutes * 60 * 1000;
+    // Sweep expired entries every 5 minutes
+    setInterval(() => this.sweep(), 5 * 60 * 1000);
   }
 
   get<T>(key: string): T | null {
@@ -910,6 +1005,13 @@ export class SearchCache {
 
   makeKey(provider: string, query: string): string {
     return `${provider}:${query.toLowerCase().trim()}`;
+  }
+
+  private sweep() {
+    const now = Date.now();
+    for (const [key, entry] of this.cache) {
+      if (now > entry.expiresAt) this.cache.delete(key);
+    }
   }
 }
 
@@ -1251,14 +1353,21 @@ export const venueRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return prisma.venue.create({
-        data: {
-          name: input.name,
-          slug: input.slug,
-          description: input.description,
-          ownerId: ctx.user.id,
-        },
-      });
+      try {
+        return await prisma.venue.create({
+          data: {
+            name: input.name,
+            slug: input.slug,
+            description: input.description,
+            ownerId: ctx.user.id,
+          },
+        });
+      } catch (err: unknown) {
+        if (err && typeof err === "object" && "code" in err && err.code === "P2002") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "This slug is already taken." });
+        }
+        throw err;
+      }
     }),
 
   update: protectedProcedure
@@ -1332,6 +1441,17 @@ export const sessionRouter = router({
       const venue = await prisma.venue.findUnique({ where: { id: input.venueId } });
       if (!venue || venue.ownerId !== ctx.user.id) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Venue not found" });
+      }
+
+      // Prevent multiple active sessions for the same venue
+      const existing = await prisma.venueSession.findFirst({
+        where: { venueId: input.venueId, isActive: true },
+      });
+      if (existing) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This venue already has an active session. End it before starting a new one.",
+        });
       }
 
       // Generate unique join code with collision retry
@@ -1455,7 +1575,11 @@ export const guestRouter = router({
         id: true,
         displayName: true,
         sessionId: true,
-        votes: { select: { songId: true, value: true } },
+        votes: {
+          where: { song: { status: { in: ["queued", "playing"] } } },
+          select: { songId: true, value: true },
+        },
+        _count: { select: { suggestions: true } },
       },
     });
     return guest;
@@ -1472,8 +1596,7 @@ import prisma from "@crowd-vibe/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router, protectedProcedure, authenticatedProcedure } from "../index";
-import { channelManager } from "../sse/channel-manager";
-import { getMusicProvider } from "../music/index";
+import { advanceQueue } from "../lib/queue-helpers";
 
 export const queueRouter = router({
   list: authenticatedProcedure
@@ -1548,61 +1671,16 @@ export const queueRouter = router({
     .mutation(async ({ ctx, input }) => {
       const session = await prisma.venueSession.findUnique({
         where: { id: input.sessionId },
-        select: { venue: { select: { ownerId: true } }, musicProvider: true },
+        select: { isActive: true, venue: { select: { ownerId: true } }, musicProvider: true },
       });
       if (!session || session.venue.ownerId !== ctx.user.id) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-
-      // Mark current playing as played
-      await prisma.song.updateMany({
-        where: { sessionId: input.sessionId, status: "playing" },
-        data: { status: "played", playedAt: new Date() },
-      });
-
-      // Get next song by score
-      const nextSong = await prisma.song.findFirst({
-        where: { sessionId: input.sessionId, status: "queued" },
-        orderBy: [{ score: "desc" }, { addedAt: "asc" }],
-      });
-
-      if (nextSong) {
-        await prisma.song.update({
-          where: { id: nextSong.id },
-          data: { status: "playing", playedAt: new Date() },
-        });
-
-        const provider = getMusicProvider(session.musicProvider);
-        const playerData = provider.getPlayerData(nextSong.providerId);
-
-        channelManager.broadcast(input.sessionId, {
-          type: "now_playing",
-          data: {
-            song: {
-              id: nextSong.id,
-              providerId: nextSong.providerId,
-              provider: nextSong.provider,
-              title: nextSong.title,
-              artist: nextSong.artist,
-              thumbnailUrl: nextSong.thumbnailUrl,
-              durationMs: nextSong.durationMs,
-              status: "playing",
-              score: nextSong.score,
-              addedAt: nextSong.addedAt.toISOString(),
-              suggestedBy: null,
-            },
-          },
-        });
-
-        return { song: nextSong, playerData };
+      if (!session.isActive) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Session has ended." });
       }
 
-      channelManager.broadcast(input.sessionId, {
-        type: "now_playing",
-        data: { song: null },
-      });
-
-      return { song: null, playerData: null };
+      return advanceQueue(input.sessionId, session.musicProvider, "played");
     }),
 
   skip: protectedProcedure
@@ -1610,61 +1688,16 @@ export const queueRouter = router({
     .mutation(async ({ ctx, input }) => {
       const session = await prisma.venueSession.findUnique({
         where: { id: input.sessionId },
-        select: { venue: { select: { ownerId: true } }, musicProvider: true },
+        select: { isActive: true, venue: { select: { ownerId: true } }, musicProvider: true },
       });
       if (!session || session.venue.ownerId !== ctx.user.id) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-
-      // Mark current as skipped
-      await prisma.song.updateMany({
-        where: { sessionId: input.sessionId, status: "playing" },
-        data: { status: "skipped" },
-      });
-
-      // Auto-advance to next song (same logic as queue.next)
-      const nextSong = await prisma.song.findFirst({
-        where: { sessionId: input.sessionId, status: "queued" },
-        orderBy: [{ score: "desc" }, { addedAt: "asc" }],
-      });
-
-      if (nextSong) {
-        await prisma.song.update({
-          where: { id: nextSong.id },
-          data: { status: "playing", playedAt: new Date() },
-        });
-
-        const provider = getMusicProvider(session.musicProvider);
-        const playerData = provider.getPlayerData(nextSong.providerId);
-
-        channelManager.broadcast(input.sessionId, {
-          type: "now_playing",
-          data: {
-            song: {
-              id: nextSong.id,
-              providerId: nextSong.providerId,
-              provider: nextSong.provider,
-              title: nextSong.title,
-              artist: nextSong.artist,
-              thumbnailUrl: nextSong.thumbnailUrl,
-              durationMs: nextSong.durationMs,
-              status: "playing",
-              score: nextSong.score,
-              addedAt: nextSong.addedAt.toISOString(),
-              suggestedBy: null,
-            },
-          },
-        });
-
-        return { song: nextSong, playerData };
+      if (!session.isActive) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Session has ended." });
       }
 
-      channelManager.broadcast(input.sessionId, {
-        type: "now_playing",
-        data: { song: null },
-      });
-
-      return { song: null, playerData: null };
+      return advanceQueue(input.sessionId, session.musicProvider, "skipped");
     }),
 });
 ```
@@ -1805,6 +1838,12 @@ export const songRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Could not find this song." });
       }
 
+      // Get guest's display name for the broadcast
+      const guest = await prisma.guestUser.findUnique({
+        where: { id: ctx.guestId },
+        select: { displayName: true },
+      });
+
       // Create song + auto-upvote in transaction
       const song = await prisma.$transaction(async (tx) => {
         const created = await tx.song.create({
@@ -1846,7 +1885,7 @@ export const songRouter = router({
             status: song.status,
             score: song.score,
             addedAt: song.addedAt.toISOString(),
-            suggestedBy: null,
+            suggestedBy: guest ? { displayName: guest.displayName } : null,
           },
         },
       });
@@ -1963,6 +2002,7 @@ import { z } from "zod";
 import { router, guestProcedure } from "../index";
 import { channelManager } from "../sse/channel-manager";
 import { parseVenueSettings } from "../lib/settings";
+import { advanceQueue } from "../lib/queue-helpers";
 
 export const voteRouter = router({
   cast: guestProcedure
@@ -2047,46 +2087,13 @@ export const voteRouter = router({
             data: { songId: input.songId },
           });
         } else if (song.status === "playing") {
-          // Auto-skip playing song and advance to next
-          await prisma.song.update({
-            where: { id: input.songId },
-            data: { status: "skipped" },
+          // Use advanceQueue helper — atomically marks current as skipped and picks next
+          const session = await prisma.venueSession.findUnique({
+            where: { id: song.sessionId },
+            select: { musicProvider: true },
           });
-
-          // Find next queued song
-          const nextSong = await prisma.song.findFirst({
-            where: { sessionId: song.sessionId, status: "queued" },
-            orderBy: [{ score: "desc" }, { addedAt: "asc" }],
-          });
-
-          if (nextSong) {
-            await prisma.song.update({
-              where: { id: nextSong.id },
-              data: { status: "playing", playedAt: new Date() },
-            });
-            channelManager.broadcast(song.sessionId, {
-              type: "now_playing",
-              data: {
-                song: {
-                  id: nextSong.id,
-                  providerId: nextSong.providerId,
-                  provider: nextSong.provider,
-                  title: nextSong.title,
-                  artist: nextSong.artist,
-                  thumbnailUrl: nextSong.thumbnailUrl,
-                  durationMs: nextSong.durationMs,
-                  status: "playing",
-                  score: nextSong.score,
-                  addedAt: nextSong.addedAt.toISOString(),
-                  suggestedBy: null,
-                },
-              },
-            });
-          } else {
-            channelManager.broadcast(song.sessionId, {
-              type: "now_playing",
-              data: { song: null },
-            });
+          if (session) {
+            await advanceQueue(song.sessionId, session.musicProvider, "skipped");
           }
         }
       }
@@ -2738,7 +2745,7 @@ Create `apps/web/src/components/venue/session-dashboard.tsx`:
 ```tsx
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
@@ -2766,13 +2773,20 @@ export default function SessionDashboard({
   onSessionEnded,
 }: SessionDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce owner search by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const queue = useQuery(trpc.queue.list.queryOptions({ sessionId }));
   const nowPlaying = useQuery(trpc.queue.nowPlaying.queryOptions({ sessionId }));
   const stats = useQuery(trpc.session.stats.queryOptions({ sessionId }));
   const searchResults = useQuery({
-    ...trpc.song.search.queryOptions({ sessionId, query: searchQuery }),
-    enabled: searchQuery.length > 0,
+    ...trpc.song.search.queryOptions({ sessionId, query: debouncedSearch }),
+    enabled: debouncedSearch.length > 0,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -3271,14 +3285,14 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const [suggestionsUsed, setSuggestionsUsed] = useState(0);
+  const guestInfo = useQuery(trpc.guest.me.queryOptions());
+  const suggestionsUsed = guestInfo.data?._count?.suggestions ?? 0;
   const maxSuggestions = 5;
 
   const suggestSong = useMutation(
     trpc.song.suggest.mutationOptions({
       onSuccess: () => {
         toast.success("Song added to queue!");
-        setSuggestionsUsed((prev) => prev + 1);
         queryClient.invalidateQueries();
         setIsOpen(false);
         setQuery("");
