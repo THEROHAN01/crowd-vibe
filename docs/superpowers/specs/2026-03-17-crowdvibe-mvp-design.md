@@ -115,7 +115,9 @@ Validate one hypothesis: **Do people actually interact with crowd voting for mus
 
 ## 2. Data Model
 
-Extends the existing Better-Auth tables (User, Account, Session, Verification). The `User` model requires a `venues Venue[]` back-relation to be added — this is safe with Better-Auth's Prisma adapter, which allows additional fields/relations on its managed models.
+Extends the existing Better-Auth tables (User, Account, Session, Verification). The `User` model in `prisma/schema/auth.prisma` requires a `venues Venue[]` back-relation to be added — this is safe with Better-Auth's Prisma adapter, which allows additional fields/relations on its managed models.
+
+**Schema file organization:** The new domain models (`Venue`, `VenueSession`, `GuestUser`, `Song`, `Vote`) go in a new file: `prisma/schema/domain.prisma`. Prisma's multi-file schema (already in use via the `prisma/schema/` directory) will merge them. The `venues Venue[]` back-relation must be added directly to the `User` model in `auth.prisma`.
 
 **Naming note:** Throughout this spec, "session" in the domain context always refers to `VenueSession` (a time-bound music session at a venue). Better-Auth's `Session` model (for authentication) is referred to as "auth session" when disambiguation is needed.
 
@@ -209,7 +211,7 @@ model Song {
   addedAt       DateTime @default(now())
   playedAt      DateTime?
   suggestedById String?
-  suggestedBy   GuestUser? @relation("SuggestedBy", fields: [suggestedById], references: [id])
+  suggestedBy   GuestUser? @relation("SuggestedBy", fields: [suggestedById], references: [id], onDelete: SetNull)
 
   votes         Vote[]
 
@@ -347,7 +349,16 @@ Singleton in the server process. All tRPC routes access the same instance. After
 - The app must run as a **single long-lived Node.js process** (not serverless functions)
 - The SSE route must export `export const runtime = "nodejs"` and `export const dynamic = "force-dynamic"`
 - This rules out Vercel's default serverless deployment for MVP. The app should be deployed on a VPS (e.g., Railway, Fly.io, DigitalOcean) or run locally with `next start`
-- The channel manager is instantiated as a module-level singleton (via `globalThis` to survive HMR in development)
+- The channel manager is instantiated as a module-level singleton via `globalThis` to ensure the same instance is shared across all route handlers (tRPC and SSE) and to survive HMR in development:
+
+```typescript
+// packages/api/src/sse/channel-manager.ts
+const globalForSSE = globalThis as unknown as { channelManager: SSEChannelManager }
+export const channelManager = globalForSSE.channelManager ?? new SSEChannelManager()
+if (process.env.NODE_ENV !== "production") globalForSSE.channelManager = channelManager
+```
+
+Both the tRPC routers (in `packages/api`) and the SSE route handler (in `apps/web/src/app/api/sse/[sessionId]/route.ts`) import from the same path: `import { channelManager } from "@crowd-vibe/api/sse/channel-manager"`. This guarantees they reference the same in-memory instance.
 
 ### SSE Endpoint
 
@@ -415,7 +426,9 @@ appRouter
 │   └── stats           (protected)   // listener count, votes, songs played
 │
 ├── guest
-│   ├── join            (public)      // create GuestUser from fingerprint
+│   │                                    // NOTE: guest.join is NOT a tRPC procedure —
+│   │                                    // it's a route handler at POST /api/guest/join
+│   │                                    // (needs Set-Cookie which tRPC can't do)
 │   └── me              (guest)       // get current guest's info + votes
 │
 ├── queue
@@ -436,17 +449,25 @@ appRouter
 
 ### Key Procedure Details
 
-**`guest.join`**
-```
-Input:  { joinCode, fingerprint, displayName? }
-Output: { sessionId, venueName, displayName }
-```
-Upserts GuestUser by `[sessionId, fingerprint]`. Sets `cv_guest` httpOnly cookie (guestId is in the cookie, not exposed in the response). Returns the session ID for redirect and the confirmed display name. No sign-up flow.
+**`guest.join`** — implemented as a **separate Next.js route handler**, NOT a tRPC procedure.
 
-**`song.suggest`** (guest procedure — `guestId` read from `ctx.guestId`, never from input)
+tRPC's `fetchRequestHandler` does not support setting response cookies from within a procedure. Therefore, `guest.join` is a standard `POST /api/guest/join` route handler that can directly construct the `Response` with `Set-Cookie` headers.
+
 ```
-Input:  { sessionId, providerId }
-Flow:   1. Check suggestion count < venue max (default 5)
+Route:  POST /api/guest/join
+Input:  { joinCode, fingerprint, displayName? }  (JSON body)
+Output: { sessionId, venueName, displayName }     (JSON response)
+Cookie: Set-Cookie: cv_guest=<guestId>.<hmac>; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400
+```
+Upserts GuestUser by `[sessionId, fingerprint]`. Sets HMAC-signed `cv_guest` httpOnly cookie on the response. Returns the session ID for redirect and the confirmed display name. No sign-up flow.
+
+The client calls this endpoint directly (not via tRPC), then redirects to `/session/[sessionId]` on success.
+
+**`song.suggest`** (guest procedure — `guestId` and `sessionId` both read from context, never from input)
+```
+Input:  { providerId }
+Flow:   0. sessionId = ctx.guestSessionId (no user input needed)
+        1. Check suggestion count < venue max (default 5)
         2. Check cooldown (default 30s since last suggestion)
         3. Check duplicate providerId in session
         4. Fetch track metadata via musicProvider.getTrack()
@@ -522,6 +543,16 @@ async function createContext({ req }: { req: NextRequest }): Promise<Context> {
 
 Three context types. Protected procedures require `type: "owner"`. Guest procedures require `type: "guest"` (guestId and guestSessionId available on ctx). Public procedures work for all.
 
+The `authenticatedProcedure` middleware:
+```typescript
+const authenticatedProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (ctx.type === "anonymous") {
+    throw new TRPCError({ code: "UNAUTHORIZED" })
+  }
+  return next({ ctx })  // ctx is narrowed to "owner" | "guest"
+})
+```
+
 The `guestProcedure` middleware:
 ```typescript
 const guestProcedure = t.procedure.use(async ({ ctx, next }) => {
@@ -532,7 +563,9 @@ const guestProcedure = t.procedure.use(async ({ ctx, next }) => {
 })
 ```
 
-**Cross-session validation:** The `guestSessionId` from context is used to validate that the guest belongs to the session they're acting on. For `song.suggest`, the procedure checks `ctx.guestSessionId === input.sessionId`. For `vote.cast`, the procedure resolves the song's `sessionId` and checks `ctx.guestSessionId === song.sessionId`. This prevents a guest with a valid cookie for session A from injecting songs or votes into session B.
+**Cross-session validation:** Guest procedures use `ctx.guestSessionId` directly — no session ID from user input. For `song.suggest`, the session is always `ctx.guestSessionId`. For `vote.cast`, the procedure resolves the song's `sessionId` and checks `ctx.guestSessionId === song.sessionId`. This prevents a guest with a valid cookie for session A from voting on songs in session B.
+
+**Authenticated procedures** (`queue.list`, `queue.nowPlaying`, `song.search`) take `{ sessionId }` as input since they serve both guests and owners. For guests, the procedure validates `ctx.guestSessionId === input.sessionId`. For owners, the procedure validates `venue.ownerId === ctx.user.id` via a join through the session's venue.
 
 ---
 
@@ -810,10 +843,23 @@ The YouTube IFrame embed has limitations that are acceptable for MVP but should 
 | Auth (guests) | @fingerprintjs/fingerprintjs v4 + HMAC-signed httpOnly cookie |
 | Database | PostgreSQL via Neon, Prisma 7 |
 | Real-time | Server-Sent Events (SSE) |
-| Music (MVP) | YouTube Data API v3 (requires `YOUTUBE_API_KEY` env var — must be added to `packages/env/src/server.ts` validation) |
+| Music (MVP) | YouTube Data API v3 |
 | Music (future) | Spotify Web API + Web Playback SDK |
 | UI components | shadcn/ui, Lucide icons, qrcode.react |
 | Dev tools | Biome, TypeScript 5 |
+
+### Environment Variable Changes
+
+The following changes are required in `packages/env/src/server.ts`:
+
+```typescript
+// ADD:
+YOUTUBE_API_KEY: z.string().min(1),
+
+// MAKE OPTIONAL (unused in MVP but Polar plugin remains configured):
+POLAR_ACCESS_TOKEN: z.string().optional(),
+POLAR_SUCCESS_URL: z.string().url().optional(),
+```
 
 ---
 
@@ -831,9 +877,10 @@ crowd-vibe/
 │           │   ├── join/[joinCode]/ # Guest join page
 │           │   ├── session/[id]/    # Guest session view
 │           │   ├── api/
-│           │   │   ├── trpc/[trpc]/ # tRPC endpoint
-│           │   │   ├── auth/[...all]/ # Better-Auth endpoint
-│           │   │   └── sse/[sessionId]/ # SSE endpoint
+│           │   │   ├── trpc/[trpc]/     # tRPC endpoint
+│           │   │   ├── auth/[...all]/   # Better-Auth endpoint
+│           │   │   ├── guest/join/      # Guest join (non-tRPC, sets cookie)
+│           │   │   └── sse/[sessionId]/ # SSE endpoint (runtime: nodejs)
 │           │   └── login/
 │           ├── components/
 │           │   ├── venue/           # Dashboard components
