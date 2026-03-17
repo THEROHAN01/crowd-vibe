@@ -1,0 +1,88 @@
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  description String?
+  logoUrl     String?
+  settings    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions    VenueSession[]
+
+  @@index([ownerId])
+  @@map("venue")
+}
+
+model VenueSession {
+  id            String    @id @default(cuid())
+  venueId       String
+  venue         Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name          String?
+  musicProvider String    @default("youtube")
+  isActive      Boolean   @default(true)
+  joinCode      String    @unique
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+
+  songs         Song[]
+  guests        GuestUser[]
+
+  @@index([venueId])
+  @@index([isActive])
+  @@map("venue_session")
+}
+
+model GuestUser {
+  id            String       @id @default(cuid())
+  sessionId     String
+  session       VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  displayName   String?
+  fingerprint   String
+  createdAt     DateTime     @default(now())
+
+  votes         Vote[]
+  suggestions   Song[]       @relation("SuggestedBy")
+
+  @@unique([sessionId, fingerprint])
+  @@index([sessionId])
+  @@map("guest_user")
+}
+
+model Song {
+  id            String       @id @default(cuid())
+  sessionId     String
+  session       VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  providerId    String
+  provider      String       @default("youtube")
+  title         String
+  artist        String?
+  thumbnailUrl  String?
+  durationMs    Int?
+  status        String       @default("queued")
+  score         Int          @default(0)
+  addedAt       DateTime     @default(now())
+  playedAt      DateTime?
+  suggestedById String?
+  suggestedBy   GuestUser?   @relation("SuggestedBy", fields: [suggestedById], references: [id], onDelete: SetNull)
+
+  votes         Vote[]
+
+  @@index([sessionId, status, score])
+  @@map("song")
+}
+
+model Vote {
+  id        String    @id @default(cuid())
+  songId    String
+  song      Song      @relation(fields: [songId], references: [id], onDelete: Cascade)
+  guestId   String
+  guest     GuestUser @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  value     Int
+  createdAt DateTime  @default(now())
+
+  @@unique([songId, guestId])
+  @@map("vote")
+}
