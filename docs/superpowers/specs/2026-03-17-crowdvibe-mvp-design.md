@@ -117,6 +117,8 @@ Validate one hypothesis: **Do people actually interact with crowd voting for mus
 
 Extends the existing Better-Auth tables (User, Account, Session, Verification). The `User` model requires a `venues Venue[]` back-relation to be added — this is safe with Better-Auth's Prisma adapter, which allows additional fields/relations on its managed models.
 
+**Naming note:** Throughout this spec, "session" in the domain context always refers to `VenueSession` (a time-bound music session at a venue). Better-Auth's `Session` model (for authentication) is referred to as "auth session" when disambiguation is needed.
+
 ### Venue
 
 ```prisma
@@ -147,7 +149,7 @@ A Venue is a permanent entity (e.g., "Blue Tokai Koramangala"). It persists acro
 model VenueSession {
   id            String   @id @default(cuid())
   venueId       String
-  venue         Venue    @relation(fields: [venueId], references: [id])
+  venue         Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
   name          String?
   musicProvider String   @default("youtube")
   isActive      Boolean  @default(true)
@@ -171,7 +173,7 @@ A VenueSession is time-bound — one per evening, clean slate each time. History
 model GuestUser {
   id            String   @id @default(cuid())
   sessionId     String
-  session       VenueSession @relation(fields: [sessionId], references: [id])
+  session       VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   displayName   String?
   fingerprint   String
   createdAt     DateTime @default(now())
@@ -195,7 +197,7 @@ Lightweight identity for venue customers. No email, no password, no OAuth.
 model Song {
   id            String   @id @default(cuid())
   sessionId     String
-  session       VenueSession @relation(fields: [sessionId], references: [id])
+  session       VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   providerId    String
   provider      String   @default("youtube")
   title         String
@@ -226,9 +228,9 @@ model Song {
 model Vote {
   id        String   @id @default(cuid())
   songId    String
-  song      Song     @relation(fields: [songId], references: [id])
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
   guestId   String
-  guest     GuestUser @relation(fields: [guestId], references: [id])
+  guest     GuestUser @relation(fields: [guestId], references: [id], onDelete: Cascade)
   value     Int
   createdAt DateTime @default(now())
 
@@ -341,6 +343,12 @@ class SSEChannelManager {
 
 Singleton in the server process. All tRPC routes access the same instance. After any mutation that changes queue state, the relevant event is broadcast to all connected clients in that session.
 
+**Deployment constraint:** The SSE channel manager requires that the tRPC route handler and the SSE route handler share the same Node.js process. This means:
+- The app must run as a **single long-lived Node.js process** (not serverless functions)
+- The SSE route must export `export const runtime = "nodejs"` and `export const dynamic = "force-dynamic"`
+- This rules out Vercel's default serverless deployment for MVP. The app should be deployed on a VPS (e.g., Railway, Fly.io, DigitalOcean) or run locally with `next start`
+- The channel manager is instantiated as a module-level singleton (via `globalThis` to survive HMR in development)
+
 ### SSE Endpoint
 
 ```
@@ -385,9 +393,10 @@ Customer taps upvote
 
 ### Router Structure
 
-Three procedure types:
+Four procedure types:
 - **`protectedProcedure`** — requires Better-Auth session (`ctx.type === "owner"`)
 - **`guestProcedure`** — requires valid `cv_guest` cookie (`ctx.type === "guest"`). Reads `guestId` from context, never from user input.
+- **`authenticatedProcedure`** — requires either owner or guest auth (`ctx.type !== "anonymous"`). Used for endpoints both user types need (queue viewing, song search).
 - **`publicProcedure`** — no auth required
 
 ```
@@ -401,7 +410,7 @@ appRouter
 ├── session
 │   ├── start           (protected)   // owner starts a new session
 │   ├── end             (protected)   // owner ends the session
-│   ├── getByJoinCode   (public)      // customer looks up session by code
+│   ├── getByJoinCode   (public)      // returns venue name, session name, listener count (NOT sessionId)
 │   ├── getActive       (public)      // get active session for a venue
 │   └── stats           (protected)   // listener count, votes, songs played
 │
@@ -410,15 +419,15 @@ appRouter
 │   └── me              (guest)       // get current guest's info + votes
 │
 ├── queue
-│   ├── list            (public)      // ordered queue for a session
-│   ├── nowPlaying      (public)      // currently playing song
-│   ├── next            (protected)   // owner triggers next song
-│   └── skip            (protected)   // owner force-skips current song
+│   ├── list            (authenticated)  // ordered queue (guest or owner)
+│   ├── nowPlaying      (authenticated)  // currently playing (guest or owner)
+│   ├── next            (protected)      // owner triggers next song
+│   └── skip            (protected)      // owner force-skips current song
 │
 ├── song
-│   ├── search          (guest)       // search via music provider
-│   ├── suggest         (guest)       // guest suggests a song
-│   ├── add             (protected)   // owner adds a song (no rate limits)
+│   ├── search          (authenticated)  // search via music provider (guest or owner)
+│   ├── suggest         (guest)          // guest suggests a song
+│   ├── add             (protected)      // owner adds a song (no rate limits)
 │   └── remove          (protected)   // owner removes a song
 │
 └── vote
@@ -454,7 +463,7 @@ Flow:   1. Verify owner owns the venue for this session
         3. Create Song with status "queued", score 0
         4. Broadcast "song_added" via SSE
 ```
-This allows the venue owner to seed the queue at the start of a session before guests arrive.
+This allows the venue owner to seed the queue at the start of a session before guests arrive. Owner-added songs start at score 0 (no auto-upvote since the owner has no GuestUser record). This is intentional — owner-seeded songs provide a starting baseline, and the crowd's votes determine what rises above them. The owner can always use "Skip" or "Next" to force playback if needed.
 
 **`vote.cast`** (guest procedure — `guestId` read from `ctx.guestId`, never from input)
 ```
@@ -465,6 +474,10 @@ Flow:   1. Lookup existing vote for guest+song
         4. No vote → create vote
         5. Recalculate song.score = SUM(votes.value) in transaction
         6. Broadcast "vote_changed" via SSE
+        7. If song status is "playing" and song.score <= downvoteSkipThreshold,
+           mark song as "skipped" and call queue.next logic to advance
+        8. If song status is "queued" and song.score <= downvoteSkipThreshold,
+           mark song as "skipped" and broadcast "song_removed"
 ```
 
 **`queue.next`**
@@ -478,22 +491,36 @@ Flow:   1. Mark current "playing" song as "played"
 
 ### Auth Context
 
-```typescript
-async function createContext({ req }) {
-  // Try Better-Auth first (venue owner)
-  const authSession = await auth.api.getSession(req)
-  if (authSession) return { type: "owner", user: authSession.user }
+The existing `createContext` must be rewritten to return a discriminated union type:
 
-  // Fall back to guest cookie
-  const guestId = getCookie(req, "cv_guest")
-  if (guestId) return { type: "guest", guestId }
+```typescript
+type Context =
+  | { type: "owner"; user: User; session: AuthSession }
+  | { type: "guest"; guestId: string; guestSessionId: string }
+  | { type: "anonymous" }
+
+async function createContext({ req }: { req: NextRequest }): Promise<Context> {
+  // Try Better-Auth first (venue owner)
+  const authSession = await auth.api.getSession({ headers: req.headers })
+  if (authSession) return { type: "owner", user: authSession.user, session: authSession.session }
+
+  // Fall back to guest cookie (HMAC-signed)
+  const rawCookie = req.cookies.get("cv_guest")?.value
+  if (rawCookie) {
+    const guestId = verifySignedCookie(rawCookie, env.BETTER_AUTH_SECRET)
+    if (guestId) {
+      // Look up guest to get their sessionId for cross-session validation
+      const guest = await db.guestUser.findUnique({ where: { id: guestId } })
+      if (guest) return { type: "guest", guestId, guestSessionId: guest.sessionId }
+    }
+  }
 
   // Unauthenticated
   return { type: "anonymous" }
 }
 ```
 
-Three context types. Protected procedures require `type: "owner"`. Guest procedures require `type: "guest"` (guestId available as `ctx.guestId`). Public procedures work for all.
+Three context types. Protected procedures require `type: "owner"`. Guest procedures require `type: "guest"` (guestId and guestSessionId available on ctx). Public procedures work for all.
 
 The `guestProcedure` middleware:
 ```typescript
@@ -501,9 +528,11 @@ const guestProcedure = t.procedure.use(async ({ ctx, next }) => {
   if (ctx.type !== "guest" || !ctx.guestId) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
-  return next({ ctx: { ...ctx, guestId: ctx.guestId } })
+  return next({ ctx: { ...ctx, guestId: ctx.guestId, guestSessionId: ctx.guestSessionId } })
 })
 ```
+
+**Cross-session validation:** The `guestSessionId` from context is used to validate that the guest belongs to the session they're acting on. For `song.suggest`, the procedure checks `ctx.guestSessionId === input.sessionId`. For `vote.cast`, the procedure resolves the song's `sessionId` and checks `ctx.guestSessionId === song.sessionId`. This prevents a guest with a valid cookie for session A from injecting songs or votes into session B.
 
 ---
 
@@ -516,7 +545,7 @@ Existing Better-Auth flow (email/password). No changes needed. Gates venue creat
 ### Venue Customers
 
 ```
-Scan QR → crowdvibe.app/join/BLUE-7X2K
+Scan QR → crowdvibe.app/join/V7KX3R
   → Landing page: venue name + "Join the Vibe"
   → Optional display name input
   → Tap "Join"
@@ -534,7 +563,7 @@ No sign-up. No email. No OAuth. One tap.
 - **Generates from:** canvas, fonts, screen resolution, WebGL, timezone, etc.
 - **Scoped to session:** `@@unique([sessionId, fingerprint])` — same phone = same GuestUser within a session
 - **Cross-session:** different GuestUser records. No tracking across sessions.
-- **Cookie:** `cv_guest`, httpOnly, sameSite strict, expires with session or after 24 hours
+- **Cookie:** `cv_guest`, httpOnly, sameSite strict, expires after 24 hours. The cookie value is HMAC-signed: `cv_guest=<guestId>.<hmac_signature>` using `BETTER_AUTH_SECRET` as the signing key. On every `guestProcedure` call, the server verifies the HMAC before trusting the guestId. This prevents cookie forgery — a user cannot impersonate another guest by guessing their CUID.
 - **Not bulletproof:** incognito windows get different fingerprints. But the effort-to-impact ratio (new incognito tab to get 5 more suggestions) makes abuse impractical in a casual venue setting.
 
 ---
@@ -591,7 +620,7 @@ Sign up → Dashboard → "Create Your Venue"
 
 ```
 "Start Session" → optional name → select provider (YouTube; Spotify greyed "Coming Soon")
-  → joinCode auto-generated (e.g., "BLUE-7X2K")
+  → joinCode auto-generated (e.g., "V7KX3R")
   → QR code auto-generated
   → Dashboard switches to live session view
 ```
@@ -611,7 +640,7 @@ The venue owner sees:
 |---|---|
 | Skip | Force-skip current song, advance to next |
 | Remove song | Remove from queue, broadcast `song_removed` |
-| End session | Mark inactive, disconnect all guests |
+| End session | Mark inactive, set `endedAt`, disconnect all guests via SSE `session_ended` event. All data (songs, votes, guests) is preserved for historical review. SSE endpoint returns 410 Gone for ended sessions. |
 | Download QR | PNG download for printing on tables |
 | Copy link | Copy join URL to clipboard |
 
@@ -630,6 +659,17 @@ Stored in `settings` Json field. Hardcoded defaults for MVP:
 
 Settings UI is a post-MVP feature. Changing defaults requires a code change for now.
 
+Settings are parsed at read time with a Zod schema that provides defaults:
+```typescript
+const VenueSettingsSchema = z.object({
+  maxSuggestionsPerGuest: z.number().default(5),
+  suggestionCooldownSec: z.number().default(30),
+  downvoteSkipThreshold: z.number().default(-3),
+  allowExplicitContent: z.boolean().default(true),
+})
+```
+This ensures missing or malformed keys fall back to safe defaults rather than crashing.
+
 ---
 
 ## 9. Customer Experience (Mobile-First)
@@ -637,7 +677,7 @@ Settings UI is a post-MVP feature. Changing defaults requires a code change for 
 ### Join Screen
 
 ```
-crowdvibe.app/join/BLUE-7X2K
+crowdvibe.app/join/V7KX3R
 
   Blue Tokai Koramangala
   "Friday Night Vibes"
@@ -687,6 +727,8 @@ crowdvibe.app/join/BLUE-7X2K
 | Vote casting | 1 per song | Per guest (DB enforced) |
 | Search requests | 10 per minute | Per guest |
 | Guest join | 3 per minute | Per IP |
+
+**Implementation:** Rate limits for search and join use an in-memory `Map<string, { count: number, resetAt: number }>` keyed by guestId (for search) or IP (for join). Suggestion count and cooldown are derived from database queries (count of songs by guestId in session, timestamp of last suggestion). The in-memory rate limiter resets on server restart, which is acceptable for MVP.
 
 ### Anti-Gaming
 
@@ -765,12 +807,12 @@ The YouTube IFrame embed has limitations that are acceptable for MVP but should 
 | Frontend | Next.js 16, React 19, TailwindCSS 4 |
 | Backend | Self-hosted in Next.js, tRPC 11 |
 | Auth (owners) | Better-Auth (email/password) |
-| Auth (guests) | FingerprintJS + httpOnly cookie |
+| Auth (guests) | @fingerprintjs/fingerprintjs v4 + HMAC-signed httpOnly cookie |
 | Database | PostgreSQL via Neon, Prisma 7 |
 | Real-time | Server-Sent Events (SSE) |
-| Music (MVP) | YouTube Data API v3 |
+| Music (MVP) | YouTube Data API v3 (requires `YOUTUBE_API_KEY` env var — must be added to `packages/env/src/server.ts` validation) |
 | Music (future) | Spotify Web API + Web Playback SDK |
-| UI components | shadcn/ui, Lucide icons |
+| UI components | shadcn/ui, Lucide icons, qrcode.react |
 | Dev tools | Biome, TypeScript 5 |
 
 ---
@@ -783,7 +825,7 @@ crowd-vibe/
 │   └── web/                    # Next.js application
 │       └── src/
 │           ├── app/
-│           │   ├── (venue)/         # Venue owner pages (auth required)
+│           │   ├── (venue)/         # Venue owner pages (auth required) — migrated from existing app/dashboard/
 │           │   │   ├── dashboard/
 │           │   │   └── venue/[slug]/
 │           │   ├── join/[joinCode]/ # Guest join page
