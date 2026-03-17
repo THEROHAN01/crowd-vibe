@@ -304,6 +304,11 @@ packages/api/src/routers/queue.integration.test.ts     — Integration tests
 ### Files to MODIFY
 
 ```
-package.json              — Add test scripts + devDependencies
-packages/api/package.json — Add vitest config reference
+package.json                          — Add test scripts + devDependencies
+packages/api/package.json             — Add vitest config reference
+packages/db/src/index.ts              — Add Neon adapter conditional for test mode
+packages/api/src/music/providers/youtube.ts — Export parseDuration and getThumbnail
+packages/api/src/lib/rate-limiter.ts  — Add destroy() method
+packages/api/src/music/search-cache.ts — Store interval handle, add destroy() method
+packages/api/src/sse/channel-manager.ts — Add reset() method
 ```
