@@ -29,10 +29,10 @@ Validate one hypothesis: **Do people actually interact with crowd voting for mus
 
 ### Non-Goals for MVP
 
-- Payment systems / credit economy
+- Payment systems / credit economy (the existing Polar plugin stays in auth config but is unused — no payment routes or UI will be built)
 - Advanced recommendation algorithms / AI music selection
 - Complex moderation systems (blocklists, genre filters, profanity filters)
-- Multi-venue management per owner
+- Multi-venue management UI (data model supports multiple venues per owner for forward compatibility, but MVP UI shows a simple list — no multi-venue dashboard)
 - Seed playlists / pre-loaded queues
 - Analytics dashboard beyond live stats
 
@@ -115,7 +115,7 @@ Validate one hypothesis: **Do people actually interact with crowd voting for mus
 
 ## 2. Data Model
 
-Extends the existing Better-Auth tables (User, Account, Session, Verification) without modifying them.
+Extends the existing Better-Auth tables (User, Account, Session, Verification). The `User` model requires a `venues Venue[]` back-relation to be added — this is safe with Better-Auth's Prisma adapter, which allows additional fields/relations on its managed models.
 
 ### Venue
 
@@ -151,7 +151,6 @@ model VenueSession {
   name          String?
   musicProvider String   @default("youtube")
   isActive      Boolean  @default(true)
-  qrCode        String?
   joinCode      String   @unique
   startedAt     DateTime @default(now())
   endedAt       DateTime?
@@ -163,7 +162,7 @@ model VenueSession {
 
 A VenueSession is time-bound — one per evening, clean slate each time. History available to venue owner.
 
-- `joinCode` — short human-readable code (e.g., "BLUE-7X2K") for manual entry
+- `joinCode` — 6-character alphanumeric code (A-Z, 2-9 — excludes ambiguous characters O/0/I/1/L). Generated randomly on session start. Uniqueness enforced by DB constraint; regenerated on collision. Example: "V7KX3R".
 - `musicProvider` — determines which provider implementation is used for this session
 
 ### GuestUser
@@ -279,14 +278,18 @@ interface MusicProvider {
 ### Provider Implementations
 
 ```
-packages/music/
+packages/api/
   src/
-    types.ts              ← MusicTrack, SearchResult, PlayerData, MusicProvider interface
-    providers/
-      youtube.ts          ← YouTube Data API v3 implementation (MVP)
-      spotify.ts          ← Spotify Web API implementation (stub/future)
-    index.ts              ← getMusicProvider(type) factory function
+    music/
+      types.ts              ← MusicTrack, SearchResult, PlayerData, MusicProvider interface
+      providers/
+        youtube.ts          ← YouTube Data API v3 implementation (MVP)
+        spotify.ts          ← Spotify Web API implementation (stub/future)
+      search-cache.ts       ← Server-side search result cache
+      index.ts              ← getMusicProvider(type) factory function
 ```
+
+The music provider logic lives inside `packages/api` rather than a separate package, since it's small for MVP and avoids workspace configuration overhead. It can be extracted into `@crowd-vibe/music` later if it grows.
 
 - `YouTubeProvider` — uses YouTube Data API v3. Search costs 100 quota units (10,000/day default).
 - `SpotifyProvider` — stub for MVP. Returns "not implemented" errors. Ready for implementation when a venue wants Spotify.
@@ -301,9 +304,11 @@ packages/music/
 
 Each player component handles its own embed/SDK integration. The parent component only deals with `PlayerData`.
 
-### Client-Side Search Caching
+### Search Caching (Two Layers)
 
-Search results are cached via React Query with `staleTime: 5 minutes`. Cache key: `[provider, query, page]`. Same query within a session returns cached results instantly. React Query deduplicates concurrent identical searches into a single API call.
+**Server-side cache (critical for YouTube API quota):** An in-memory cache keyed by `[provider, query]` with a 15-minute TTL. When 20 guests search "drake", only the first request hits YouTube API. All subsequent requests within 15 minutes return the cached result. This is essential — without it, the 10,000 units/day YouTube quota (~100 searches) would be exhausted in minutes at a busy venue.
+
+**Client-side cache:** React Query with `staleTime: 5 minutes`. Cache key: `[provider, query, page]`. Same query on the same phone returns cached results instantly without any network request. React Query deduplicates concurrent identical searches into a single API call.
 
 ---
 
@@ -343,6 +348,8 @@ GET /api/sse/[sessionId]
 Content-Type: text/event-stream
 ```
 
+**Authentication:** The SSE endpoint validates that the connecting client has either (a) a valid `cv_guest` cookie linked to the requested session, or (b) a valid Better-Auth session for the venue owner of that session. Unauthenticated connections are rejected with 401. This prevents arbitrary access by session ID guessing.
+
 Subscribes the response stream to the channel manager. Sends heartbeats every 30 seconds to prevent timeout.
 
 ### Client: Event Hook
@@ -365,6 +372,7 @@ Creates an `EventSource` connection. Auto-reconnects on disconnect. On reconnect
 ```
 Customer taps upvote
   → tRPC mutation: vote.cast({ songId, value: +1 })
+  → Server: reads guestId from ctx (cv_guest cookie)
   → Server: upserts Vote, recalculates Song.score in transaction
   → Server: channelManager.broadcast(sessionId, { type: "vote_changed", ... })
   → SSE pushes to all connected clients
@@ -376,6 +384,11 @@ Customer taps upvote
 ## 5. API Layer (tRPC Routers)
 
 ### Router Structure
+
+Three procedure types:
+- **`protectedProcedure`** — requires Better-Auth session (`ctx.type === "owner"`)
+- **`guestProcedure`** — requires valid `cv_guest` cookie (`ctx.type === "guest"`). Reads `guestId` from context, never from user input.
+- **`publicProcedure`** — no auth required
 
 ```
 appRouter
@@ -394,7 +407,7 @@ appRouter
 │
 ├── guest
 │   ├── join            (public)      // create GuestUser from fingerprint
-│   └── me              (public)      // get current guest's info + votes
+│   └── me              (guest)       // get current guest's info + votes
 │
 ├── queue
 │   ├── list            (public)      // ordered queue for a session
@@ -403,12 +416,13 @@ appRouter
 │   └── skip            (protected)   // owner force-skips current song
 │
 ├── song
-│   ├── search          (public)      // search via music provider
-│   ├── suggest         (public)      // guest suggests a song
+│   ├── search          (guest)       // search via music provider
+│   ├── suggest         (guest)       // guest suggests a song
+│   ├── add             (protected)   // owner adds a song (no rate limits)
 │   └── remove          (protected)   // owner removes a song
 │
 └── vote
-    └── cast            (public)      // guest upvotes/downvotes
+    └── cast            (guest)       // guest upvotes/downvotes
 ```
 
 ### Key Procedure Details
@@ -416,13 +430,13 @@ appRouter
 **`guest.join`**
 ```
 Input:  { joinCode, fingerprint, displayName? }
-Output: { guestId, sessionId, venueName }
+Output: { sessionId, venueName, displayName }
 ```
-Upserts GuestUser by `[sessionId, fingerprint]`. Sets `cv_guest` httpOnly cookie. No sign-up flow.
+Upserts GuestUser by `[sessionId, fingerprint]`. Sets `cv_guest` httpOnly cookie (guestId is in the cookie, not exposed in the response). Returns the session ID for redirect and the confirmed display name. No sign-up flow.
 
-**`song.suggest`**
+**`song.suggest`** (guest procedure — `guestId` read from `ctx.guestId`, never from input)
 ```
-Input:  { sessionId, providerId, guestId }
+Input:  { sessionId, providerId }
 Flow:   1. Check suggestion count < venue max (default 5)
         2. Check cooldown (default 30s since last suggestion)
         3. Check duplicate providerId in session
@@ -432,9 +446,19 @@ Flow:   1. Check suggestion count < venue max (default 5)
         7. Broadcast "song_added" via SSE
 ```
 
-**`vote.cast`**
+**`song.add`** (protected procedure — venue owner adds songs, no rate limits)
 ```
-Input:  { songId, guestId, value: 1 | -1 }
+Input:  { sessionId, providerId }
+Flow:   1. Verify owner owns the venue for this session
+        2. Fetch track metadata via musicProvider.getTrack()
+        3. Create Song with status "queued", score 0
+        4. Broadcast "song_added" via SSE
+```
+This allows the venue owner to seed the queue at the start of a session before guests arrive.
+
+**`vote.cast`** (guest procedure — `guestId` read from `ctx.guestId`, never from input)
+```
+Input:  { songId, value: 1 | -1 }
 Flow:   1. Lookup existing vote for guest+song
         2. Same value exists → remove vote (toggle off)
         3. Opposite value → update to new value
@@ -469,7 +493,17 @@ async function createContext({ req }) {
 }
 ```
 
-Three context types. Protected procedures require `type: "owner"`. Guest procedures require `type: "guest"`. Public procedures work for all.
+Three context types. Protected procedures require `type: "owner"`. Guest procedures require `type: "guest"` (guestId available as `ctx.guestId`). Public procedures work for all.
+
+The `guestProcedure` middleware:
+```typescript
+const guestProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (ctx.type !== "guest" || !ctx.guestId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" })
+  }
+  return next({ ctx: { ...ctx, guestId: ctx.guestId } })
+})
+```
 
 ---
 
@@ -518,10 +552,10 @@ Highest votes win. Ties broken by first-suggested. Simple, transparent, predicta
 
 ### Song Advancement Triggers
 
-1. **Auto-advance** — frontend player fires `onEnded`, calls `queue.next`
+1. **Auto-advance** — the YouTube player embed runs ONLY on the venue owner's dashboard. When the song ends, the dashboard's player fires `onEnded` and calls `queue.next`. Customers do NOT have a playable embed — they see a display-only "Now Playing" card (thumbnail, title, artist).
 2. **Manual skip** — venue owner taps "Skip" on dashboard
 
-No server-side duration tracking. The player is the source of truth.
+No server-side duration tracking. The owner's dashboard player is the single source of truth for playback state. If the dashboard tab closes mid-song, the owner must reopen it and manually skip to resume.
 
 ### Fairness Constraints
 
@@ -616,7 +650,7 @@ crowdvibe.app/join/BLUE-7X2K
 
 ### Main Session View
 
-- **Now Playing (hero)** — large thumbnail/album art, song title, artist, progress bar
+- **Now Playing (hero)** — large thumbnail/album art, song title, artist (no progress bar — playback runs on the owner's dashboard, not on customer devices)
 - **Up Next (queue)** — scrollable list, each song shows title, artist, score, upvote/downvote buttons
 - **Search & Add (bottom)** — button opens bottom sheet with search input and results
 
@@ -682,6 +716,48 @@ crowdvibe.app/join/BLUE-7X2K
 
 ---
 
+## 11. QR Code Generation
+
+QR codes are generated **client-side** using `qrcode.react`. The QR encodes the join URL: `{ORIGIN}/join/{joinCode}`. No `qrCode` field is stored in the database — it's derived from the `joinCode` at render time.
+
+For the "Download QR" feature, the QR is rendered to a canvas element and exported as PNG via `canvas.toDataURL()`.
+
+---
+
+## 12. YouTube Integration: Known Limitations
+
+The YouTube IFrame embed has limitations that are acceptable for MVP but should be understood:
+
+- **Ads:** YouTube embeds may show pre-roll ads on non-Premium accounts. The venue should use a YouTube Premium-signed-in browser to avoid this. This is a known UX tradeoff for MVP.
+- **Tab must stay active:** The owner's dashboard tab with the YouTube embed must remain open and focused for playback to continue. Minimizing/backgrounding may pause playback.
+- **Video UI:** The embed shows video, not audio-only. This is acceptable — the venue can display it on a screen, or the owner can minimize the visual.
+- **Commercial use:** YouTube's Terms of Service do not explicitly permit background music playback in commercial venues via embeds. For MVP validation in a single venue, this is acceptable. Spotify integration (with proper commercial licensing) is the intended long-term solution.
+
+---
+
+## 13. Error Handling
+
+### Principles
+
+- All tRPC errors use standard error codes: `NOT_FOUND`, `FORBIDDEN`, `TOO_MANY_REQUESTS`, `BAD_REQUEST`, `UNAUTHORIZED`, `INTERNAL_SERVER_ERROR`
+- The client shows toast notifications (via Sonner, already installed) for user-facing errors
+- Errors are descriptive: "You've used all 5 song suggestions" not "Rate limit exceeded"
+
+### Specific Error Scenarios
+
+| Scenario | Error Code | User-Facing Message |
+|---|---|---|
+| YouTube API down/rate-limited | `INTERNAL_SERVER_ERROR` | "Search is temporarily unavailable. Try again in a moment." (returns empty results, does not crash) |
+| Vote transaction fails | Retry once, then `INTERNAL_SERVER_ERROR` | "Couldn't register your vote. Tap to try again." |
+| Session not found | `NOT_FOUND` | "This session doesn't exist or has ended." |
+| Suggestion limit reached | `TOO_MANY_REQUESTS` | "You've used all 5 song suggestions for this session." |
+| Suggestion cooldown active | `TOO_MANY_REQUESTS` | "Wait a few seconds before suggesting another song." |
+| Duplicate song in queue | `BAD_REQUEST` | "This song is already in the queue — vote for it instead!" |
+| Invalid join code | `NOT_FOUND` | "No active session found for this code." |
+| Network error (client-side) | N/A | Toast: "Connection lost. Reconnecting..." (SSE auto-reconnects) |
+
+---
+
 ## Tech Stack Summary
 
 | Layer | Technology |
@@ -734,16 +810,16 @@ crowd-vibe/
 │   │       │   ├── queue.ts
 │   │       │   ├── song.ts
 │   │       │   └── vote.ts
+│   │       ├── music/
+│   │       │   ├── types.ts
+│   │       │   ├── providers/
+│   │       │   │   ├── youtube.ts
+│   │       │   │   └── spotify.ts
+│   │       │   ├── search-cache.ts
+│   │       │   └── index.ts
 │   │       ├── sse/
 │   │       │   └── channel-manager.ts
 │   │       └── context.ts
-│   ├── music/                  # Music provider abstraction (NEW)
-│   │   └── src/
-│   │       ├── types.ts
-│   │       ├── providers/
-│   │       │   ├── youtube.ts
-│   │       │   └── spotify.ts
-│   │       └── index.ts
 │   ├── db/                     # Prisma schema + client
 │   ├── auth/                   # Better-Auth config
 │   ├── ui/                     # Shared shadcn components
