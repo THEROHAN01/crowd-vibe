@@ -7,12 +7,13 @@ import { nextCookies } from "better-auth/next-js";
 
 import { polarClient } from "./lib/payments";
 
-const plugins = [nextCookies()];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const plugins: any[] = [nextCookies()];
 
 if (polarClient && env.POLAR_SUCCESS_URL) {
   plugins.unshift(
     polar({
-      client: polarClient,
+      client: polarClient as any,
       createCustomerOnSignUp: true,
       enableCustomerPortal: true,
       use: [

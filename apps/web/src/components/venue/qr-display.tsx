@@ -27,7 +27,7 @@ export default function QRDisplay({ joinCode }: QRDisplayProps) {
   }, [joinCode]);
 
   const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(joinUrl);
+    if (joinUrl) navigator.clipboard.writeText(joinUrl);
   }, [joinUrl]);
 
   if (!joinUrl) {
