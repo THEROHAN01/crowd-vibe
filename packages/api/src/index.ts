@@ -44,5 +44,7 @@ export const authenticatedProcedure = t.procedure.use(({ ctx, next }) => {
       message: "Authentication required",
     });
   }
-  return next({ ctx });
+  return next({
+    ctx: ctx as Exclude<Context, { type: "anonymous" }>,
+  });
 });
