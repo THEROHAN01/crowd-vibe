@@ -58,7 +58,9 @@ export default function SessionDashboard({
   const endSession = useMutation(trpc.session.end.mutationOptions({
     onSuccess: onSessionEnded,
   }));
-  const addSong = useMutation(trpc.song.add.mutationOptions());
+  const addSong = useMutation(trpc.song.add.mutationOptions({
+    onSuccess: () => queryClient.invalidateQueries(),
+  }));
 
   // SSE real-time updates
   useSessionEvents(sessionId, {

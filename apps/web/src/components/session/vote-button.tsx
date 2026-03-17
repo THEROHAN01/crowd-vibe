@@ -15,7 +15,6 @@ export default function VoteButton({ songId, direction, isActive }: VoteButtonPr
     trpc.vote.cast.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries();
-        queryClient.invalidateQueries({ queryKey: [["guest"]] });
       },
     })
   );

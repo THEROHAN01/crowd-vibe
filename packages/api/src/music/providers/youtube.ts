@@ -59,7 +59,8 @@ export class YouTubeProvider implements MusicProvider {
 
     const res = await fetch(url.toString());
     if (!res.ok) {
-      throw new Error(`YouTube API error: ${res.status}`);
+      const errorBody = await res.text().catch(() => "");
+      throw new Error(`YouTube API error: ${res.status} ${errorBody}`);
     }
 
     const data = await res.json();

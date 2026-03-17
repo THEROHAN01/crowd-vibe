@@ -27,12 +27,10 @@ export async function GET(
     return new Response("Session ended", { status: 410 });
   }
 
-  // Authenticate: guest cookie OR venue owner
-  const guestCookie = req.cookies.get("cv_guest")?.value;
-  const authSession = await auth.api.getSession({ headers: req.headers });
-
+  // Authenticate: check guest cookie first (cheaper), fall back to auth session
   let authorized = false;
 
+  const guestCookie = req.cookies.get("cv_guest")?.value;
   if (guestCookie) {
     const guestId = verifySignedCookie(guestCookie, env.BETTER_AUTH_SECRET);
     if (guestId) {
@@ -44,8 +42,12 @@ export async function GET(
     }
   }
 
-  if (!authorized && authSession?.user) {
-    if (session.venue.ownerId === authSession.user.id) authorized = true;
+  // Only check auth session if guest cookie didn't authorize
+  if (!authorized) {
+    const authSession = await auth.api.getSession({ headers: req.headers });
+    if (authSession?.user && session.venue.ownerId === authSession.user.id) {
+      authorized = true;
+    }
   }
 
   if (!authorized) {
@@ -100,7 +102,6 @@ export async function GET(
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
-      Connection: "keep-alive",
     },
   });
 }

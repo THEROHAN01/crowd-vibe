@@ -19,6 +19,19 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
     return () => clearTimeout(timer);
   }, [query]);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        setQuery("");
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   const searchResults = useQuery({
     ...trpc.song.search.queryOptions({ sessionId, query: debouncedQuery }),
     enabled: debouncedQuery.length > 0 && isOpen,

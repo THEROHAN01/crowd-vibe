@@ -20,7 +20,9 @@ export default function QueueManager({
   songs: Song[];
   sessionId: string;
 }) {
-  const removeSong = useMutation(trpc.song.remove.mutationOptions());
+  const removeSong = useMutation(trpc.song.remove.mutationOptions({
+    onSuccess: () => queryClient.invalidateQueries(),
+  }));
 
   if (songs.length === 0) {
     return (

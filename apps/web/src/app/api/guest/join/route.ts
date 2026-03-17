@@ -3,12 +3,20 @@ import { env } from "@crowd-vibe/env/server";
 import { signCookie } from "@crowd-vibe/api/lib/cookie";
 import { RateLimiter } from "@crowd-vibe/api/lib/rate-limiter";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const joinRateLimiter = new RateLimiter(3, 60_000); // 3 per minute per IP
 
+const JoinSchema = z.object({
+  joinCode: z.string().min(1),
+  fingerprint: z.string().min(1),
+  displayName: z.string().max(50).optional(),
+});
+
 export async function POST(req: NextRequest) {
   // Rate limit by IP
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const { allowed } = joinRateLimiter.check(ip);
   if (!allowed) {
     return NextResponse.json(
@@ -17,19 +25,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json();
-  const { joinCode, fingerprint, displayName } = body as {
-    joinCode: string;
-    fingerprint: string;
-    displayName?: string;
-  };
+  // Parse and validate body
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
+  }
 
-  if (!joinCode || !fingerprint) {
+  const parsed = JoinSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
       { error: "joinCode and fingerprint are required" },
       { status: 400 }
     );
   }
+
+  const { joinCode, fingerprint, displayName } = parsed.data;
 
   // Find active session by join code
   const session = await prisma.venueSession.findUnique({
@@ -81,7 +96,7 @@ export async function POST(req: NextRequest) {
     sameSite: "lax",
     path: "/",
     maxAge: 86400, // 24 hours
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
   });
 
   return response;
