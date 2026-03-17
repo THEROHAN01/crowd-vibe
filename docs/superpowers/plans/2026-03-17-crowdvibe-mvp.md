@@ -639,7 +639,7 @@ export interface QueuedSong {
   status: string;
   score: number;
   addedAt: string;
-  suggestedBy: string | null;
+  suggestedBy: { displayName: string | null } | null;
 }
 
 export type SSEEvent =
@@ -1201,7 +1201,7 @@ export async function POST(req: NextRequest) {
 
   response.cookies.set("cv_guest", signedCookie, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "lax",
     path: "/",
     maxAge: 86400, // 24 hours
     secure: process.env.NODE_ENV === "production",
@@ -1384,10 +1384,10 @@ export const sessionRouter = router({
       const session = await prisma.venueSession.findUnique({
         where: { joinCode: input.joinCode },
         select: {
+          id: true,
           isActive: true,
           name: true,
           venue: { select: { name: true } },
-          _count: { select: { guests: true } },
         },
       });
 
@@ -1398,7 +1398,7 @@ export const sessionRouter = router({
       return {
         venueName: session.venue.name,
         sessionName: session.name,
-        listenerCount: session._count.guests,
+        listenerCount: channelManager.getListenerCount(session.id),
       };
     }),
 
@@ -2184,7 +2184,7 @@ interface QueuedSong {
   status: string;
   score: number;
   addedAt: string;
-  suggestedBy: string | null;
+  suggestedBy: { displayName: string | null } | null;
 }
 
 interface SessionEventHandlers {
@@ -2481,7 +2481,7 @@ export default function CreateVenueForm({ onCreated }: { onCreated: () => void }
   const createVenue = useMutation(
     trpc.venue.create.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["venue", "listMine"]] });
+        queryClient.invalidateQueries();
         onCreated();
       },
     })
@@ -2541,7 +2541,7 @@ export default function StartSessionForm({
   const startSession = useMutation(
     trpc.session.start.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["venue", "listMine"]] });
+        queryClient.invalidateQueries();
         onStarted();
       },
     })
@@ -2575,7 +2575,7 @@ Create `apps/web/src/components/player/youtube-player.tsx`:
 "use client";
 
 import { useCallback } from "react";
-import YouTube, { type YouTubeEvent } from "react-youtube";
+import YouTube from "react-youtube";
 
 interface YouTubePlayerProps {
   videoId: string;
@@ -2583,12 +2583,9 @@ interface YouTubePlayerProps {
 }
 
 export default function YouTubePlayer({ videoId, onEnded }: YouTubePlayerProps) {
-  const handleEnd = useCallback(
-    (event: YouTubeEvent) => {
-      onEnded();
-    },
-    [onEnded]
-  );
+  const handleEnd = useCallback(() => {
+    onEnded();
+  }, [onEnded]);
 
   return (
     <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
@@ -2615,7 +2612,7 @@ Create `apps/web/src/components/venue/qr-display.tsx`:
 ```tsx
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@crowd-vibe/ui/components/button";
 
@@ -2625,7 +2622,11 @@ interface QRDisplayProps {
 
 export default function QRDisplay({ joinCode }: QRDisplayProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const joinUrl = `${window.location.origin}/join/${joinCode}`;
+  const [joinUrl, setJoinUrl] = useState("");
+
+  useEffect(() => {
+    setJoinUrl(`${window.location.origin}/join/${joinCode}`);
+  }, [joinCode]);
 
   const downloadQR = useCallback(() => {
     const canvas = canvasRef.current?.querySelector("canvas");
@@ -2777,12 +2778,12 @@ export default function SessionDashboard({
 
   const nextSong = useMutation(trpc.queue.next.mutationOptions({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [["queue"]] });
+      queryClient.invalidateQueries();
     },
   }));
   const skipSong = useMutation(trpc.queue.skip.mutationOptions({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [["queue"]] });
+      queryClient.invalidateQueries();
     },
   }));
   const endSession = useMutation(trpc.session.end.mutationOptions({
@@ -3159,7 +3160,7 @@ export default function VoteButton({ songId, direction, isActive }: VoteButtonPr
   const castVote = useMutation(
     trpc.vote.cast.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["queue"]] });
+        queryClient.invalidateQueries();
         queryClient.invalidateQueries({ queryKey: [["guest"]] });
       },
     })
@@ -3270,11 +3271,15 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
     staleTime: 5 * 60 * 1000,
   });
 
+  const [suggestionsUsed, setSuggestionsUsed] = useState(0);
+  const maxSuggestions = 5;
+
   const suggestSong = useMutation(
     trpc.song.suggest.mutationOptions({
       onSuccess: () => {
         toast.success("Song added to queue!");
-        queryClient.invalidateQueries({ queryKey: [["queue"]] });
+        setSuggestionsUsed((prev) => prev + 1);
+        queryClient.invalidateQueries();
         setIsOpen(false);
         setQuery("");
       },
@@ -3307,6 +3312,11 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
           Cancel
         </Button>
       </div>
+      <div className="px-4 pt-2">
+        <p className="text-sm text-muted-foreground">
+          Suggestions left: {maxSuggestions - suggestionsUsed}/{maxSuggestions}
+        </p>
+      </div>
       <div className="flex-1 overflow-y-auto p-4">
         {searchResults.isLoading && <p className="text-center text-muted-foreground">Searching...</p>}
         {searchResults.data?.tracks.map((track) => (
@@ -3321,9 +3331,9 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
             <Button
               size="sm"
               onClick={() => suggestSong.mutate({ providerId: track.providerId })}
-              disabled={suggestSong.isPending}
+              disabled={suggestSong.isPending || suggestionsUsed >= maxSuggestions}
             >
-              Add
+              {suggestionsUsed >= maxSuggestions ? "Limit" : "Add"}
             </Button>
           </div>
         ))}
