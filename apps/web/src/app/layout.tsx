@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "crowd-vibe",
-  description: "crowd-vibe",
+  title: "CrowdVibe — Crowd-Controlled Music",
+  description: "Let the crowd control the vibe. Vote on songs in real-time at your favorite venues.",
 };
 
 export default function RootLayout({
