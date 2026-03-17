@@ -7,18 +7,10 @@ import { nextCookies } from "better-auth/next-js";
 
 import { polarClient } from "./lib/payments";
 
-export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-  }),
+const plugins = [nextCookies()];
 
-  trustedOrigins: [env.CORS_ORIGIN],
-  emailAndPassword: {
-    enabled: true,
-  },
-  secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL,
-  plugins: [
+if (polarClient && env.POLAR_SUCCESS_URL) {
+  plugins.unshift(
     polar({
       client: polarClient,
       createCustomerOnSignUp: true,
@@ -36,7 +28,19 @@ export const auth = betterAuth({
         }),
         portal(),
       ],
-    }),
-    nextCookies(),
-  ],
+    })
+  );
+}
+
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  trustedOrigins: [env.CORS_ORIGIN],
+  emailAndPassword: {
+    enabled: true,
+  },
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL,
+  plugins,
 });

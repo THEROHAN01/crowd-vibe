@@ -2,12 +2,11 @@
   "name": "@crowd-vibe/api",
   "type": "module",
   "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
+    ".": { "default": "./src/index.ts" },
+    "./*": { "default": "./src/*.ts" },
+    "./sse/*": { "default": "./src/sse/*.ts" },
+    "./music/*": { "default": "./src/music/*.ts" },
+    "./lib/*": { "default": "./src/lib/*.ts" }
   },
   "scripts": {},
   "dependencies": {
