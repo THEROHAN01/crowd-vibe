@@ -29,7 +29,7 @@ Validate one hypothesis: **Do people actually interact with crowd voting for mus
 
 ### Non-Goals for MVP
 
-- Payment systems / credit economy (the existing Polar plugin stays in auth config but is unused — no payment routes or UI will be built)
+- Payment systems / credit economy (the Polar plugin in auth config must be conditionally registered: only activate when `POLAR_ACCESS_TOKEN` is present. When absent, the plugin is skipped entirely. No payment routes or UI will be built for MVP.)
 - Advanced recommendation algorithms / AI music selection
 - Complex moderation systems (blocklists, genre filters, profanity filters)
 - Multi-venue management UI (data model supports multiple venues per owner for forward compatibility, but MVP UI shows a simple list — no multi-venue dashboard)
@@ -355,10 +355,23 @@ Singleton in the server process. All tRPC routes access the same instance. After
 // packages/api/src/sse/channel-manager.ts
 const globalForSSE = globalThis as unknown as { channelManager: SSEChannelManager }
 export const channelManager = globalForSSE.channelManager ?? new SSEChannelManager()
-if (process.env.NODE_ENV !== "production") globalForSSE.channelManager = channelManager
+globalForSSE.channelManager = channelManager  // always assign — both dev and prod
 ```
 
-Both the tRPC routers (in `packages/api`) and the SSE route handler (in `apps/web/src/app/api/sse/[sessionId]/route.ts`) import from the same path: `import { channelManager } from "@crowd-vibe/api/sse/channel-manager"`. This guarantees they reference the same in-memory instance.
+Both the tRPC routers (in `packages/api`) and the SSE route handler (in `apps/web/src/app/api/sse/[sessionId]/route.ts`) import from the same path. Since Node.js package exports `*` wildcard only matches a single path segment (not slashes), the `@crowd-vibe/api` package.json must add explicit exports for nested paths:
+
+```json
+{
+  "exports": {
+    ".": { "default": "./src/index.ts" },
+    "./*": { "default": "./src/*.ts" },
+    "./sse/*": { "default": "./src/sse/*.ts" },
+    "./music/*": { "default": "./src/music/*.ts" }
+  }
+}
+```
+
+Import: `import { channelManager } from "@crowd-vibe/api/sse/channel-manager"`. This guarantees they reference the same in-memory instance.
 
 ### SSE Endpoint
 
@@ -467,6 +480,7 @@ The client calls this endpoint directly (not via tRPC), then redirects to `/sess
 ```
 Input:  { providerId }
 Flow:   0. sessionId = ctx.guestSessionId (no user input needed)
+        0.5 Fetch VenueSession to read musicProvider field → resolve provider via getMusicProvider(session.musicProvider)
         1. Check suggestion count < venue max (default 5)
         2. Check cooldown (default 30s since last suggestion)
         3. Check duplicate providerId in session
@@ -480,6 +494,7 @@ Flow:   0. sessionId = ctx.guestSessionId (no user input needed)
 ```
 Input:  { sessionId, providerId }
 Flow:   1. Verify owner owns the venue for this session
+        1.5 Fetch VenueSession to read musicProvider field → resolve provider via getMusicProvider(session.musicProvider)
         2. Fetch track metadata via musicProvider.getTrack()
         3. Create Song with status "queued", score 0
         4. Broadcast "song_added" via SSE
@@ -565,7 +580,7 @@ const guestProcedure = t.procedure.use(async ({ ctx, next }) => {
 
 **Cross-session validation:** Guest procedures use `ctx.guestSessionId` directly — no session ID from user input. For `song.suggest`, the session is always `ctx.guestSessionId`. For `vote.cast`, the procedure resolves the song's `sessionId` and checks `ctx.guestSessionId === song.sessionId`. This prevents a guest with a valid cookie for session A from voting on songs in session B.
 
-**Authenticated procedures** (`queue.list`, `queue.nowPlaying`, `song.search`) take `{ sessionId }` as input since they serve both guests and owners. For guests, the procedure validates `ctx.guestSessionId === input.sessionId`. For owners, the procedure validates `venue.ownerId === ctx.user.id` via a join through the session's venue.
+**Authenticated procedures** (`queue.list`, `queue.nowPlaying`, `song.search`) take `{ sessionId }` as input since they serve both guests and owners. For guests, the procedure validates `ctx.guestSessionId === input.sessionId`. For owners, the procedure validates `venue.ownerId === ctx.user.id` via a join through the session's venue. `song.search` additionally fetches the VenueSession to read its `musicProvider` field and resolves the provider via `getMusicProvider(session.musicProvider)` before calling `provider.search(query)`.
 
 ---
 
