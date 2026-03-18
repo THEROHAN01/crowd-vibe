@@ -1,12 +1,15 @@
-import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../prisma/generated/client";
-import { env } from "@crowd-vibe/env/server";
 
 let prisma: PrismaClient;
 
 if (process.env.VITEST) {
-  prisma = new PrismaClient({ datasourceUrl: env.DATABASE_URL });
+  // Dynamic import to avoid loading pg driver in production/edge environments
+  const { PrismaPg } = await import("@prisma/adapter-pg");
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  prisma = new PrismaClient({ adapter });
 } else {
+  const { PrismaNeon } = await import("@prisma/adapter-neon");
+  const { env } = await import("@crowd-vibe/env/server");
   const adapter = new PrismaNeon({ connectionString: env.DATABASE_URL });
   prisma = new PrismaClient({ adapter });
 }

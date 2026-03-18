@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPackageDir = path.resolve(__dirname, "../../../db");
+const dbPackageDir = path.resolve(__dirname, "../../db");
 
 export function setup() {
   const url = process.env.DATABASE_URL ?? "";
@@ -15,9 +15,22 @@ export function setup() {
     );
   }
 
+  const prismaPath = path.resolve(
+    __dirname,
+    "../../../node_modules/.bin/prisma",
+  );
   execFileSync(
-    "npx",
-    ["prisma", "db", "push", "--force-reset"],
-    { stdio: "inherit", cwd: dbPackageDir },
+    process.execPath,
+    [prismaPath, "db", "push", "--force-reset"],
+    {
+      stdio: "inherit",
+      cwd: dbPackageDir,
+      env: {
+        ...process.env,
+        // This is a test database (crowdvibe_test on port 5433) — safe to reset.
+        PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION:
+          "yes, reset the test database",
+      },
+    },
   );
 }

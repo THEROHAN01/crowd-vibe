@@ -15,6 +15,7 @@ export default defineConfig({
           name: "integration",
           include: ["packages/api/src/**/*.integration.test.ts"],
           globalSetup: ["packages/api/test/globalSetup.ts"],
+          fileParallelism: false,
         },
       },
     ],
