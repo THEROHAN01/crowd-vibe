@@ -20,7 +20,7 @@ This spec defines the complete visual identity, design system, component languag
 
 ### Logo Concept
 
-- **Wordmark:** "CrowdVibe" in Space Grotesk Bold (700), with "Crowd" in `--on-surface` and "Vibe" in `--primary` (violet)
+- **Wordmark:** "CrowdVibe" in Space Grotesk Bold (700), with "Crowd" in `--foreground` and "Vibe" in `--primary` (violet)
 - **Logomark:** A stylized sound wave / equalizer formed from 3 vertical bars of different heights — represents music + voting (bars as vote counts)
 - **Minimum size:** 24px height for logomark, 120px width for full wordmark
 - **Clear space:** 8px minimum around all sides
@@ -96,7 +96,7 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
   --score-neutral: oklch(0.65 0.01 280);     /* muted */
 
   /* Radius */
-  --radius: 0.75rem;                          /* 12px — MD3 rounded */
+  --radius: 0.75rem;                          /* 12px — MD3 "Medium" shape. NOTE: This is a deliberate change from the current 0.625rem (10px). All shadcn components derive border-radius from this value, so every rounded corner in the app will increase by 2px. */
 
   /* Chart colors */
   --chart-1: oklch(0.78 0.15 280);
@@ -190,6 +190,8 @@ These mappings are **required** for TailwindCSS 4 to generate utility classes fr
   --duration-micro: 150ms;
   --duration-standard: 200ms;
   --duration-emphasis: 300ms;
+  --duration-enter: 300ms;
+  --duration-exit: 200ms;
 }
 ```
 
@@ -216,7 +218,7 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 2. **Vote colors use semantic tokens** (`--upvote`, `--downvote`) not raw green/red
 3. **Text on surfaces must meet 4.5:1 contrast** (WCAG AA minimum, AAA preferred)
 4. **Primary color for interactive elements only** — not for large surface areas
-5. **Dark mode is the default** — system preference respected via `next-themes`
+5. **Dark mode is the default** — change `defaultTheme` in `apps/web/src/components/providers.tsx` from `"system"` to `"dark"`. System preference still respected via `next-themes` (users can toggle), but first-time visitors see dark mode.
 
 ---
 
@@ -229,6 +231,8 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 | **Headings** | Space Grotesk | 500, 600, 700 | `next/font/google` with `display: swap` |
 | **Body / UI** | DM Sans | 400, 500, 600 | `next/font/google` with `display: swap` |
 | **Monospace** | Geist Mono | 400 | Already loaded in project |
+
+**Required change in `apps/web/src/app/layout.tsx`:** Replace the current `Geist` and `Geist_Mono` font imports with `DM_Sans` and `Space_Grotesk` from `next/font/google`. Keep `Geist_Mono` for monospace. Inject CSS variables `--font-sans`, `--font-heading`, `--font-mono` on the `<body>` element.
 
 ### Type Scale
 
@@ -286,13 +290,13 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 | Variant | Background | Text | Usage |
 |---|---|---|---|
 | Filled (Primary) | `--primary` | `--primary-foreground` | Main CTAs |
-| Tonal | `--primary/15%` | `--primary` | Secondary actions |
+| Tonal | `--primary/15%` | `--primary` | Secondary actions (**requires adding `tonal` variant to `packages/ui/src/components/button.tsx` CVA config**) |
 | Outlined | transparent | `--foreground` | Tertiary actions |
 | Text (MD3) | transparent | `--primary` | Tertiary text actions |
 | Icon | transparent | `--on-surface-variant` | Icon-only buttons (with `aria-label`) |
 | Destructive | `--destructive` | white | Dangerous actions |
 
-All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`.
+All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`. **Requires modifying `packages/ui/src/components/button.tsx`** — current default height is 32px, sm is 28px, lg is 36px. All size variants must be increased to meet the 44px minimum (`h-11` default, `h-10` for sm, `h-12` for lg).
 
 **MD3 State Layers (applied via overlay opacity on content color):**
 
@@ -308,8 +312,8 @@ All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), we
 - Size: `44x44px`, `rounded-full` (meets minimum touch target; visual icon 20px centered in 44px hit area)
 - Idle: `--on-surface-variant` icon, transparent bg
 - Hover: `8%` overlay (MD3 hover state layer)
-- Active upvote: `--upvote/15%` bg, `--upvote` icon color
-- Active downvote: `--downvote/15%` bg, `--downvote` icon color
+- Active upvote: `bg-upvote/15 text-upvote` (replaces hardcoded `text-green-500` in `apps/web/src/components/session/vote-button.tsx`)
+- Active downvote: `bg-downvote/15 text-downvote` (replaces hardcoded `text-red-500`)
 - Tap: `scale(0.85)` for 100ms → spring back
 - Score: `title-sm`, tabular figures, colored by sign
 
@@ -323,6 +327,8 @@ All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), we
 - Error: `--destructive` border + helper text below
 
 ### Song Search Bottom Sheet
+
+**Requires rewriting `apps/web/src/components/session/song-search.tsx`** — current implementation uses `fixed inset-0` full-screen overlay. Must be replaced with shadcn `Sheet` component (side="bottom").
 
 - Slides from bottom with spring animation (`300ms`)
 - Drag handle: `32x4px`, centered, `--muted-foreground` bg
@@ -506,7 +512,7 @@ Preserves state changes while removing all motion.
 
 | Phase | Scope | Impact |
 |---|---|---|
-| **Phase 1** | Color system + typography + globals.css rewrite | Foundation for everything |
+| **Phase 1** | Color system + typography + **full globals.css rewrite** (replace entire `:root`, `.dark`, and `@theme inline` blocks) + font loading in `layout.tsx` | Foundation for everything |
 | **Phase 2** | Component restyling (buttons, cards, inputs) | Immediate visual improvement |
 | **Phase 3** | Page layouts (guest session, dashboard, join, auth) | User experience transformation |
 | **Phase 4** | Motion & micro-interactions (vote animation, queue reorder, sheets) | Polish & delight |
@@ -568,7 +574,7 @@ The dashboard stats row shows **2 stat cards** (matching MVP spec):
 - Listeners (active SSE connections)
 - Songs played
 
-Each stat card: icon (Lucide, 20px) + number (`title-lg`, tabular figures) + label (`label`, uppercase). Compact horizontal layout on mobile, row of cards on desktop.
+Each stat card: icon (Lucide, 20px) + number (`title-lg`, tabular figures) + label (`label`, uppercase). Compact horizontal layout on mobile, row of cards on desktop. **Requires modifying `apps/web/src/components/venue/session-dashboard.tsx`** — current implementation uses inline text, not card components.
 
 ---
 
@@ -587,7 +593,7 @@ Each stat card: icon (Lucide, 20px) + number (`title-lg`, tabular figures) + lab
 
 ---
 
-## 12. Pre-Delivery Checklist
+## 13. Pre-Delivery Checklist
 
 Before shipping any UI component:
 
