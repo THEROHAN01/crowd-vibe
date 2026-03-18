@@ -1,19 +1,21 @@
 import type { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
-  icon: LucideIcon;
-  value: number;
-  label: string;
+	icon: LucideIcon;
+	value: number;
+	label: string;
 }
 
 export default function StatCard({ icon: Icon, value, label }: StatCardProps) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
-      <Icon className="h-5 w-5 text-muted-foreground" />
-      <div>
-        <p className="text-xl font-heading font-bold tabular-nums">{value}</p>
-        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
-      </div>
-    </div>
-  );
+	return (
+		<div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
+			<Icon className="h-5 w-5 text-muted-foreground" />
+			<div>
+				<p className="font-bold font-heading text-xl tabular-nums">{value}</p>
+				<p className="font-medium text-muted-foreground text-xs uppercase tracking-widest">
+					{label}
+				</p>
+			</div>
+		</div>
+	);
 }

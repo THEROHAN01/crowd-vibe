@@ -104,3 +104,9 @@ npm run test:db:reset      # Reset test database schema
 | `npm run test:integration` | Run integration tests (requires Docker) |
 | `npm run test:all` | Run all tests |
 | `npm run test:coverage` | Run tests with coverage report |
+
+## Deployment
+
+CrowdVibe uses Server-Sent Events (SSE) for real-time queue updates. This requires a **single long-lived Node.js process** — serverless platforms (e.g., Vercel default) will not work.
+
+**Recommended platforms:** Railway, Fly.io, DigitalOcean App Platform, or any VPS with `next start`.

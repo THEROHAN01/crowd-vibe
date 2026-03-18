@@ -3,17 +3,17 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function VenueLayout({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
 
-  if (!session?.user) {
-    redirect("/login");
-  }
+	if (!session?.user) {
+		redirect("/login");
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 }

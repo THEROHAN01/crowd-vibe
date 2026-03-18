@@ -1,9 +1,18 @@
 export default function EqualizerBars() {
-  return (
-    <div className="flex items-end gap-0.5 h-4" aria-hidden="true">
-      <span className="w-[3px] rounded-full bg-accent animate-equalize" style={{ animationDelay: "0s" }} />
-      <span className="w-[3px] rounded-full bg-accent animate-equalize" style={{ animationDelay: "0.2s" }} />
-      <span className="w-[3px] rounded-full bg-accent animate-equalize" style={{ animationDelay: "0.4s" }} />
-    </div>
-  );
+	return (
+		<div className="flex h-4 items-end gap-0.5" aria-hidden="true">
+			<span
+				className="w-[3px] animate-equalize rounded-full bg-accent"
+				style={{ animationDelay: "0s" }}
+			/>
+			<span
+				className="w-[3px] animate-equalize rounded-full bg-accent"
+				style={{ animationDelay: "0.2s" }}
+			/>
+			<span
+				className="w-[3px] animate-equalize rounded-full bg-accent"
+				style={{ animationDelay: "0.4s" }}
+			/>
+		</div>
+	);
 }

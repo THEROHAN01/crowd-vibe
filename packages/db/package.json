@@ -1,33 +1,33 @@
 {
-  "name": "@crowd-vibe/db",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {
-    "db:push": "prisma db push",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@crowd-vibe/env": "*",
-    "@neondatabase/serverless": "^1.0.2",
-    "@prisma/adapter-neon": "^7.2.0",
-    "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "^7.2.0",
-    "dotenv": "^17.2.2",
-    "zod": "^4.1.13"
-  },
-  "devDependencies": {
-    "@crowd-vibe/config": "*",
-    "prisma": "^7.2.0",
-    "typescript": "^5"
-  }
+	"name": "@crowd-vibe/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"db:push": "prisma db push",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"postinstall": "prisma generate",
+		"db:studio": "prisma studio"
+	},
+	"dependencies": {
+		"@crowd-vibe/env": "*",
+		"@neondatabase/serverless": "^1.0.2",
+		"@prisma/adapter-neon": "^7.2.0",
+		"@prisma/adapter-pg": "^7.2.0",
+		"@prisma/client": "^7.2.0",
+		"dotenv": "^17.2.2",
+		"zod": "^4.1.13"
+	},
+	"devDependencies": {
+		"@crowd-vibe/config": "*",
+		"prisma": "^7.2.0",
+		"typescript": "^5"
+	}
 }

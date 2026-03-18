@@ -1,10 +1,10 @@
 import SessionView from "./session-view";
 
 export default async function SessionPage({
-  params,
+	params,
 }: {
-  params: Promise<{ id: string }>;
+	params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  return <SessionView sessionId={id} />;
+	const { id } = await params;
+	return <SessionView sessionId={id} />;
 }

@@ -6,44 +6,44 @@ import type { NextRequest } from "next/server";
 import { verifySignedCookie } from "./lib/cookie";
 
 export type Context =
-  | { type: "owner"; user: { id: string; name: string; email: string } }
-  | { type: "guest"; guestId: string; guestSessionId: string }
-  | { type: "anonymous" };
+	| { type: "owner"; user: { id: string; name: string; email: string } }
+	| { type: "guest"; guestId: string; guestSessionId: string }
+	| { type: "anonymous" };
 
 export async function createContext(req: NextRequest): Promise<Context> {
-  // Try Better-Auth first (venue owner)
-  const authSession = await auth.api.getSession({
-    headers: req.headers,
-  });
-  if (authSession?.user) {
-    return {
-      type: "owner",
-      user: {
-        id: authSession.user.id,
-        name: authSession.user.name,
-        email: authSession.user.email,
-      },
-    };
-  }
+	// Try Better-Auth first (venue owner)
+	const authSession = await auth.api.getSession({
+		headers: req.headers,
+	});
+	if (authSession?.user) {
+		return {
+			type: "owner",
+			user: {
+				id: authSession.user.id,
+				name: authSession.user.name,
+				email: authSession.user.email,
+			},
+		};
+	}
 
-  // Fall back to guest cookie (HMAC-signed)
-  const rawCookie = req.cookies.get("cv_guest")?.value;
-  if (rawCookie) {
-    const guestId = verifySignedCookie(rawCookie, env.BETTER_AUTH_SECRET);
-    if (guestId) {
-      const guest = await prisma.guestUser.findUnique({
-        where: { id: guestId },
-        select: { sessionId: true },
-      });
-      if (guest) {
-        return {
-          type: "guest",
-          guestId,
-          guestSessionId: guest.sessionId,
-        };
-      }
-    }
-  }
+	// Fall back to guest cookie (HMAC-signed)
+	const rawCookie = req.cookies.get("cv_guest")?.value;
+	if (rawCookie) {
+		const guestId = verifySignedCookie(rawCookie, env.BETTER_AUTH_SECRET);
+		if (guestId) {
+			const guest = await prisma.guestUser.findUnique({
+				where: { id: guestId },
+				select: { sessionId: true },
+			});
+			if (guest) {
+				return {
+					type: "guest",
+					guestId,
+					guestSessionId: guest.sessionId,
+				};
+			}
+		}
+	}
 
-  return { type: "anonymous" };
+	return { type: "anonymous" };
 }

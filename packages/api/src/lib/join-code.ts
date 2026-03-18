@@ -5,9 +5,9 @@ const CHARSET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const CODE_LENGTH = 6;
 
 export function generateJoinCode(): string {
-  let code = "";
-  for (let i = 0; i < CODE_LENGTH; i++) {
-    code += CHARSET[randomInt(CHARSET.length)];
-  }
-  return code;
+	let code = "";
+	for (let i = 0; i < CODE_LENGTH; i++) {
+		code += CHARSET[randomInt(CHARSET.length)];
+	}
+	return code;
 }
