@@ -40,7 +40,7 @@ export default function RootLayout({
 				className={`${dmSans.variable} ${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
 			>
 				<Providers>
-					<div className="grid h-svh grid-rows-[auto_1fr]">
+					<div className="grid h-svh grid-rows-[auto_1fr_auto]">
 						<a
 							href="#main-content"
 							className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -49,6 +49,19 @@ export default function RootLayout({
 						</a>
 						<Header />
 						<div id="main-content">{children}</div>
+						<footer className="border-border border-t px-4 py-3 text-center text-muted-foreground text-xs">
+							Built with{" "}
+							<span aria-label="music" role="img">🎵</span>{" "}
+							by{" "}
+							<a
+								href="https://github.com/rohan"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="font-medium text-primary transition-colors hover:text-primary/80"
+							>
+								Rohan
+							</a>
+						</footer>
 					</div>
 				</Providers>
 			</body>
