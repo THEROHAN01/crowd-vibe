@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/logo-full-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="apps/web/public/logo-full.svg">
-    <img alt="CrowdVibe" src="apps/web/public/logo-full.svg" width="240">
+    <img alt="CrowdVibe" src="apps/web/public/logo-full.svg" width="840">
   </picture>
 </p>
 
