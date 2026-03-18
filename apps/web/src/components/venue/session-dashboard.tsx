@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Users, Music } from "lucide-react";
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
 import { trpc, queryClient } from "@/utils/trpc";
@@ -9,6 +10,8 @@ import { useSessionEvents } from "@/hooks/use-session-events";
 import YouTubePlayer from "@/components/player/youtube-player";
 import QRDisplay from "@/components/venue/qr-display";
 import QueueManager from "@/components/venue/queue-manager";
+import StatCard from "@/components/ui/stat-card";
+import LiveBadge from "@/components/ui/live-badge";
 
 interface SessionDashboardProps {
   venueId: string;
@@ -82,23 +85,31 @@ export default function SessionDashboard({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">{venueName}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-heading font-bold">{venueName}</h1>
+            <LiveBadge />
+          </div>
           {sessionName && <p className="text-muted-foreground">{sessionName}</p>}
-          <p className="text-sm text-muted-foreground">
-            Listeners: {stats.data?.listenerCount ?? 0} | Songs played: {stats.data?.songsPlayed ?? 0}
-          </p>
         </div>
         <Button variant="destructive" size="sm" onClick={() => endSession.mutate({ sessionId })}>
           End Session
         </Button>
       </div>
 
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4">
+        <StatCard icon={Users} value={stats.data?.listenerCount ?? 0} label="Listeners" />
+        <StatCard icon={Music} value={stats.data?.songsPlayed ?? 0} label="Played" />
+      </div>
+
       {/* Now Playing + Player */}
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-3">Now Playing</h2>
+      <div className="bg-card border border-border rounded-lg p-4">
+        <h2 className="font-heading font-semibold mb-3">Now Playing</h2>
         {nowPlaying.data ? (
           <div className="grid gap-3">
-            <YouTubePlayer videoId={nowPlaying.data.providerId} onEnded={handleSongEnded} />
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <YouTubePlayer videoId={nowPlaying.data.providerId} onEnded={handleSongEnded} />
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">{nowPlaying.data.title}</p>
@@ -123,8 +134,8 @@ export default function SessionDashboard({
       </div>
 
       {/* Owner Song Search + Add */}
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-3">Add Songs</h2>
+      <div className="bg-card border border-border rounded-lg p-4">
+        <h2 className="font-heading font-semibold mb-3">Add Songs</h2>
         <Input
           placeholder="Search for songs..."
           value={searchQuery}
@@ -146,8 +157,8 @@ export default function SessionDashboard({
       </div>
 
       {/* Queue */}
-      <div className="border rounded-lg p-4">
-        <h2 className="font-semibold mb-3">Queue</h2>
+      <div className="bg-card border border-border rounded-lg p-4">
+        <h2 className="font-heading font-semibold mb-3">Queue</h2>
         <QueueManager songs={queue.data ?? []} sessionId={sessionId} />
       </div>
 

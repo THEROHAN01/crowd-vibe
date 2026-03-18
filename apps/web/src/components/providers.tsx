@@ -15,7 +15,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         {children}
         <ReactQueryDevtools />
       </QueryClientProvider>
-      <Toaster richColors />
+      <Toaster
+        richColors
+        position="bottom-center"
+        toastOptions={{
+          className: "border border-border bg-card text-foreground",
+        }}
+      />
     </ThemeProvider>
   );
 }

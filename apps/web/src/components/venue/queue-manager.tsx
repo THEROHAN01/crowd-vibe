@@ -37,7 +37,7 @@ export default function QueueManager({
       {songs.map((song, i) => (
         <div
           key={song.id}
-          className="flex items-center gap-3 p-3 border rounded-lg"
+          className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg"
         >
           <span className="text-muted-foreground text-sm w-6">{i + 1}</span>
           {song.thumbnailUrl && (

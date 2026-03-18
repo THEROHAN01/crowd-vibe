@@ -31,15 +31,15 @@ export default function QRDisplay({ joinCode }: QRDisplayProps) {
   }, [joinUrl]);
 
   if (!joinUrl) {
-    return <div className="flex items-center justify-center p-8 border rounded-lg">Loading QR code...</div>;
+    return <div className="flex items-center justify-center p-8 border border-primary/20 rounded-lg shadow-lg shadow-primary/5">Loading QR code...</div>;
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4 border rounded-lg">
+    <div className="flex flex-col items-center gap-4 p-4 border border-primary/20 rounded-lg shadow-lg shadow-primary/5">
       <div ref={canvasRef}>
         <QRCodeCanvas value={joinUrl} size={200} />
       </div>
-      <p className="font-mono text-lg font-bold">{joinCode}</p>
+      <p className="font-mono text-2xl font-bold tracking-widest">{joinCode}</p>
       <p className="text-sm text-muted-foreground break-all">{joinUrl}</p>
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={downloadQR}>
