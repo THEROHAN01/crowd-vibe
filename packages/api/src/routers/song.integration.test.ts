@@ -132,15 +132,8 @@ describe("song router", () => {
       await createTestSong(session.id, { providerId: "vid-dup", status: "queued" });
       const caller = createGuestCaller(guest.id, session.id);
 
-      (mockProvider.getTrack as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        providerId: "vid-dup",
-        provider: "youtube",
-        title: "Dup",
-        artist: null,
-        thumbnailUrl: null,
-        durationMs: null,
-      });
-
+      // Note: the duplicate check fires before getTrack is called,
+      // so no mock override is needed here
       await expect(
         caller.song.suggest({ providerId: "vid-dup" }),
       ).rejects.toMatchObject({ code: "BAD_REQUEST" });
