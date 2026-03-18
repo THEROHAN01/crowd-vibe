@@ -22,6 +22,7 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
         <ListMusic className="w-16 h-16 text-muted-foreground mx-auto mb-3" />
         <p className="text-muted-foreground font-medium">No songs yet</p>
         <p className="text-sm text-muted-foreground mt-1">Be the first to add one!</p>
+        <p className="text-xs text-muted-foreground mt-3">Use the Search &amp; Add button below</p>
       </div>
     );
   }
