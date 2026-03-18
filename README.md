@@ -2,14 +2,11 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/logo-full-dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="apps/web/public/logo-full.svg">
-    <img alt="CrowdVibe" src="apps/web/public/logo-full.svg" width="540">
+    <img alt="CrowdVibe" src="apps/web/public/logo-full.svg" width="850">
   </picture>
 </p>
 
-<p align="center">
-  <strong>Crowd-controlled music for venues</strong><br>
-  Let your customers vote on what plays next
-</p>
+
 
 ---
 
