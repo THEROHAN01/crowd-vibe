@@ -50,7 +50,12 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 		<div className="relative mx-auto flex h-full max-w-lg flex-col">
 			{/* Session Ended Overlay */}
 			{sessionEnded && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur">
+				<div
+					role="dialog"
+					aria-modal="true"
+					aria-label="Session ended"
+					className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur"
+				>
 					<div className="text-center">
 						<Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
 						<h2 className="mb-2 font-heading font-semibold text-2xl">
@@ -60,28 +65,36 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 					</div>
 				</div>
 			)}
-			{/* Top Bar */}
-			<div className="flex items-center justify-between border-border border-b px-4 py-3">
-				<Logo size="sm" />
-				<LiveBadge />
-			</div>
+			{/* Content — inert when session ended to block keyboard/pointer interaction */}
+			{/* biome-ignore lint: inert is valid HTML but React types lag */}
+			<div
+				className={`flex flex-1 flex-col ${sessionEnded ? "pointer-events-none" : ""}`}
+				// @ts-expect-error — inert is a valid HTML attribute, React 19 types pending
+				inert={sessionEnded ? "" : undefined}
+			>
+				{/* Top Bar */}
+				<div className="flex items-center justify-between border-border border-b px-4 py-3">
+					<Logo size="sm" />
+					<LiveBadge />
+				</div>
 
-			{/* Now Playing Hero */}
-			<div aria-live="polite">
-				<NowPlaying song={nowPlaying.data ?? null} />
-			</div>
+				{/* Now Playing Hero */}
+				<div aria-live="polite">
+					<NowPlaying song={nowPlaying.data ?? null} />
+				</div>
 
-			{/* Queue */}
-			<div className="flex-1 overflow-y-auto px-4 py-3">
-				<h2 className="mb-2 font-semibold text-muted-foreground text-sm">
-					UP NEXT
-				</h2>
-				<SongQueue songs={queue.data ?? []} myVotes={myVotes} />
-			</div>
+				{/* Queue */}
+				<div className="flex-1 overflow-y-auto px-4 py-3">
+					<h2 className="mb-2 font-semibold text-muted-foreground text-sm">
+						UP NEXT
+					</h2>
+					<SongQueue songs={queue.data ?? []} myVotes={myVotes} />
+				</div>
 
-			{/* Search & Add */}
-			<div className="border-t p-4">
-				<SongSearch sessionId={sessionId} />
+				{/* Search & Add */}
+				<div className="border-t p-4">
+					<SongSearch sessionId={sessionId} />
+				</div>
 			</div>
 		</div>
 	);
