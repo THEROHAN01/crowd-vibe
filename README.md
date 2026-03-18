@@ -70,6 +70,31 @@ crowd-vibe/
 │   └── ui/           # Shared shadcn/ui components & design tokens
 ```
 
+## Testing
+
+The project uses **Vitest** with two test layers:
+
+- **Unit tests** — Pure logic (cookie signing, rate limiting, join codes, settings, search cache, YouTube provider, SSE channels). No database needed.
+- **Integration tests** — tRPC routers against a real Docker PostgreSQL database. Tests auth boundaries, data mutations, broadcasts, and cross-entity flows.
+
+```bash
+# Quick start
+npm run test:db:up         # Start test database (Docker, once)
+npm run test               # Run unit tests
+npm run test:integration   # Run integration tests
+npm run test:all           # Run everything
+
+# Development
+npm run test:watch         # Unit tests in watch mode (TDD)
+npm run test:coverage      # Generate coverage report
+
+# Database management
+npm run test:db:down       # Stop test database
+npm run test:db:reset      # Reset test database schema
+```
+
+**94 tests** across 13 files. See [`docs/testing-guide.md`](docs/testing-guide.md) for the full testing guide.
+
 ## Scripts
 
 | Command | Description |
@@ -81,3 +106,7 @@ crowd-vibe/
 | `npm run db:studio` | Open the database studio UI |
 | `npm run check` | Run Biome formatting & linting |
 | `npm run check-types` | Type-check across all packages |
+| `npm test` | Run unit tests |
+| `npm run test:integration` | Run integration tests (requires Docker) |
+| `npm run test:all` | Run all tests |
+| `npm run test:coverage` | Run tests with coverage report |
