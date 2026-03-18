@@ -263,7 +263,7 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 - Padding: `16px`
 - Hover: `+rgba(255,255,255,0.04)` overlay
 - Active: `scale(0.98)` for 150ms
-- Now Playing card: additional `border-color: var(--primary)` with subtle `box-shadow: 0 0 20px var(--primary/10%)`
+- Now Playing card: additional `border-color: var(--primary)` with subtle `box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent)`
 
 ### Buttons
 
@@ -337,7 +337,7 @@ All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), we
 
 **Live session layout:**
 - Header row: venue name + "Live" badge + "End Session" destructive button
-- Stats row: 3 compact stat cards (listeners, songs played, total votes) with icons
+- Stats row: 2 compact stat cards (listeners, songs played) with icons
 - Two-column grid (desktop): Now Playing with YouTube player + QR code display
 - Single column below: song search + queue manager
 - Mobile: all single-column, stacked
