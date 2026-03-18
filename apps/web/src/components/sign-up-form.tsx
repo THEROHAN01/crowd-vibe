@@ -8,6 +8,7 @@ import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
+import Logo from "@/components/ui/logo";
 import Loader from "./loader";
 
 export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
@@ -53,7 +54,10 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
 
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+      <div className="flex justify-center mb-4">
+        <Logo />
+      </div>
+      <h1 className="mb-6 text-center text-3xl font-bold font-heading">Create Account</h1>
 
       <form
         onSubmit={(e) => {
@@ -76,7 +80,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive">
                     {error?.message}
                   </p>
                 ))}
@@ -99,7 +103,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive">
                     {error?.message}
                   </p>
                 ))}
@@ -122,7 +126,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
+                  <p key={error?.message} className="text-destructive">
                     {error?.message}
                   </p>
                 ))}
@@ -146,7 +150,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
         <Button
           variant="link"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="text-primary hover:text-primary/80"
         >
           Already have an account? Sign In
         </Button>

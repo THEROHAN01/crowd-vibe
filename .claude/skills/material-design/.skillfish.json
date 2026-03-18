@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "material-design",
+  "owner": "vinnie357",
+  "repo": "claude-skills",
+  "path": "plugins/core/skills/material-design",
+  "branch": "main",
+  "sha": "2eff112cbe56f5aaa0f249f45bf4efebaf5bb7a6",
+  "source": "manual"
+}

@@ -2,11 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Music } from "lucide-react";
 import { trpc } from "@/utils/trpc";
 import { useSessionEvents } from "@/hooks/use-session-events";
 import NowPlaying from "@/components/session/now-playing";
 import SongQueue from "@/components/session/song-queue";
 import SongSearch from "@/components/session/song-search";
+import Logo from "@/components/ui/logo";
+import LiveBadge from "@/components/ui/live-badge";
 
 export default function SessionView({ sessionId }: { sessionId: string }) {
   const [sessionEnded, setSessionEnded] = useState(false);
@@ -34,10 +37,11 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 
   if (sessionEnded) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-2">Session Ended</h2>
-          <p className="text-muted-foreground">This session has ended. Thanks for vibing!</p>
+          <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="font-heading text-2xl font-semibold mb-2">Session Ended</h2>
+          <p className="text-sm text-muted-foreground">Thanks for vibing!</p>
         </div>
       </div>
     );
@@ -54,8 +58,16 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="flex flex-col h-full max-w-lg mx-auto">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <Logo size="sm" />
+        <LiveBadge />
+      </div>
+
       {/* Now Playing Hero */}
-      <NowPlaying song={nowPlaying.data ?? null} />
+      <div aria-live="polite">
+        <NowPlaying song={nowPlaying.data ?? null} />
+      </div>
 
       {/* Queue */}
       <div className="flex-1 overflow-y-auto px-4 py-3">

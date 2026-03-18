@@ -7,6 +7,7 @@ import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
 import { trpc } from "@/utils/trpc";
 import { useGuest } from "@/hooks/use-guest";
+import Logo from "@/components/ui/logo";
 
 export default function JoinPage() {
   const params = useParams<{ joinCode: string }>();
@@ -39,15 +40,17 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-4 gap-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">{sessionInfo.data?.venueName}</h1>
-        {sessionInfo.data?.sessionName && (
-          <p className="text-muted-foreground">&quot;{sessionInfo.data.sessionName}&quot;</p>
-        )}
-      </div>
+    <div className="flex flex-col items-center justify-center h-full px-4 gap-6 bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.2_280/0.05),transparent)]">
+      <Logo />
 
-      <div className="w-full max-w-sm grid gap-4">
+      <div className="w-full max-w-sm rounded-xl border border-primary/20 shadow-lg shadow-primary/5 bg-card p-6 grid gap-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold font-heading">{sessionInfo.data?.venueName}</h1>
+          {sessionInfo.data?.sessionName && (
+            <p className="text-muted-foreground">&quot;{sessionInfo.data.sessionName}&quot;</p>
+          )}
+        </div>
+
         <Input
           placeholder="Your name (optional)"
           value={displayName}
@@ -57,11 +60,15 @@ export default function JoinPage() {
           {isJoining ? "Joining..." : "Join the Vibe"}
         </Button>
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
-      </div>
 
-      <p className="text-sm text-muted-foreground">
-        {sessionInfo.data?.listenerCount ?? 0} people vibing now
-      </p>
+        <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+          </span>
+          {sessionInfo.data?.listenerCount ?? 0} people vibing now
+        </p>
+      </div>
     </div>
   );
 }

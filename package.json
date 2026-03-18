@@ -33,9 +33,11 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
     "@crowd-vibe/config": "*",
+    "@prisma/adapter-pg": "^7.5.0",
     "@types/node": "^22.13.14",
     "@vitest/coverage-v8": "^4.1.0",
     "dotenv-cli": "^11.0.0",
+    "pg": "^8.20.0",
     "typescript": "^5",
     "vitest": "^4.1.0"
   },
