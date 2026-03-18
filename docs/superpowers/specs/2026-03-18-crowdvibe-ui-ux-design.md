@@ -42,7 +42,8 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
 #### Dark Mode (Default)
 
 ```css
-:root[data-theme="dark"], .dark {
+.dark {
+  /* Matches ThemeProvider attribute="class" in providers.tsx */
   /* Surfaces */
   --background: oklch(0.08 0.02 280);       /* #0F0B1E — deep violet-black */
   --card: oklch(0.13 0.025 280);             /* #1A1530 — elevated surface */
@@ -116,7 +117,7 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
   --secondary: oklch(0.97 0.005 280);
   --secondary-foreground: oklch(0.15 0.01 280);
 
-  --accent: oklch(0.55 0.18 160);            /* #10B981 — emerald-500 */
+  --accent: oklch(0.47 0.18 160);            /* #047857 — emerald-700, WCAG AA 5.5:1 on white */
   --accent-foreground: oklch(1.0 0 0);
 
   --destructive: oklch(0.55 0.2 25);         /* #EF4444 — red-500 */
@@ -126,15 +127,71 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
   --input: oklch(0.9 0.005 280);
   --ring: oklch(0.55 0.2 280);
 
-  --upvote: oklch(0.55 0.18 160);
+  --upvote: oklch(0.47 0.18 160);
   --downvote: oklch(0.55 0.2 25);
-  --now-playing: oklch(0.55 0.18 160);
-  --score-positive: oklch(0.55 0.18 160);
+  --now-playing: oklch(0.47 0.18 160);
+  --score-positive: oklch(0.47 0.18 160);
   --score-negative: oklch(0.55 0.2 25);
   --score-neutral: oklch(0.45 0.01 280);
 
   --radius: 0.75rem;
+
+  /* Sidebar tokens (preserved from shadcn defaults for future use) */
+  --sidebar: oklch(0.985 0.002 280);
+  --sidebar-foreground: oklch(0.15 0.01 280);
+  --sidebar-primary: oklch(0.55 0.2 280);
+  --sidebar-primary-foreground: oklch(1.0 0 0);
+  --sidebar-accent: oklch(0.97 0.005 280);
+  --sidebar-accent-foreground: oklch(0.15 0.01 280);
+  --sidebar-border: oklch(0.9 0.005 280);
+  --sidebar-ring: oklch(0.55 0.2 280);
 }
+```
+
+### Tailwind @theme inline Mappings
+
+These mappings are **required** for TailwindCSS 4 to generate utility classes from the custom CSS variables:
+
+```css
+@theme inline {
+  /* Fonts */
+  --font-sans: "DM Sans", ui-sans-serif, sans-serif;
+  --font-heading: "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* Custom functional colors */
+  --color-upvote: var(--upvote);
+  --color-downvote: var(--downvote);
+  --color-now-playing: var(--now-playing);
+  --color-score-positive: var(--score-positive);
+  --color-score-negative: var(--score-negative);
+  --color-score-neutral: var(--score-neutral);
+
+  /* Motion tokens */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 100ms;
+  --duration-micro: 150ms;
+  --duration-standard: 200ms;
+  --duration-emphasis: 300ms;
+}
+```
+
+This enables classes like `text-upvote`, `bg-downvote/15`, `font-heading`, `font-sans`, `duration-standard`, etc.
+
+### Opacity on Custom Properties
+
+Since OKLch values are used, apply opacity using **Tailwind's built-in opacity modifier** on the generated utility classes — not raw CSS `var()` with `/`:
+
+```
+✅ Correct:  bg-primary/10  (Tailwind handles opacity)
+✅ Correct:  text-upvote/80
+❌ Wrong:    var(--primary/10%)  (not valid CSS)
+```
+
+For CSS-only contexts (e.g., `box-shadow`), use `color-mix`:
+```css
+box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 ```
 
 ### Color Usage Rules
@@ -190,8 +247,8 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
 
 | Token | Value | Usage |
 |---|---|---|
-| Border radius (cards) | `12px` | Cards, dialogs, sheets |
-| Border radius (buttons/inputs) | `8px` | Interactive elements |
+| Border radius (cards) | `12px` (`rounded-lg` = `--radius`) | Cards, dialogs, sheets |
+| Border radius (buttons/inputs) | `10px` (`rounded-md` = `--radius - 2px`) | Interactive elements. Note: shadcn derives this from `--radius: 0.75rem` automatically. |
 | Border radius (pills) | `9999px` | Badges, chips, status dots |
 | Spacing grid | 4px increments | All padding/margin/gaps |
 | Transition standard | `200ms cubic-bezier(0.2, 0, 0, 1)` | Most transitions |
@@ -218,7 +275,7 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
 | Ghost | transparent | `--muted-foreground` | Icon buttons |
 | Destructive | `--destructive` | white | Dangerous actions |
 
-All buttons: min-height `44px`, radius `8px`, weight `600`, hover with MD3 state layer `+8% overlay`, active `scale(0.97)`.
+All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`, hover with MD3 state layer `+8% overlay`, active `scale(0.97)`.
 
 ### Vote Buttons
 
@@ -429,7 +486,65 @@ Preserves state changes while removing all motion.
 
 ---
 
-## 11. Anti-Patterns to Avoid
+## 11. Additional Component Specs
+
+### Session Ended Overlay
+
+When the venue owner ends a session, guests see a full-screen overlay:
+
+- **Position:** fixed, full viewport, z-50
+- **Background:** `--background` at 95% opacity + `backdrop-filter: blur(8px)`
+- **Content:** centered vertically and horizontally
+- **Icon:** Lucide `Music` icon at 48px, `--muted-foreground`
+- **Heading:** "Session Ended" in `headline` weight
+- **Body:** "Thanks for vibing!" in `body-sm`, `--muted-foreground`
+- **Interactions:** all underlying elements disabled (pointer-events-none on content behind overlay)
+
+### Empty Queue State
+
+When no songs are in the queue:
+
+- **Icon:** Lucide `ListMusic` icon at 64px, `--muted-foreground`, centered
+- **Text:** "No songs yet — be the first to add one!" in `body`, `--muted-foreground`
+- **CTA:** "Search & Add" tonal button below the text
+- **No custom illustration** — use Lucide icon to keep it simple and consistent for MVP
+
+### Toast Styling (Sonner)
+
+Use Sonner's `richColors` mode (already enabled) with these overrides:
+
+- **Position:** `bottom-center` on mobile, `bottom-right` on desktop
+- **Background:** `--card` with `--border` outline
+- **Text:** `--foreground`
+- **Success toast:** left border `--accent` (emerald)
+- **Error toast:** left border `--destructive` (red)
+- **Duration:** 4 seconds auto-dismiss
+- **Animation:** slide up from bottom, 300ms spring
+
+### YouTube Player Container
+
+- **Aspect ratio:** 16:9 (`aspect-video`)
+- **Border radius:** `12px` (`rounded-lg`), matching card radius
+- **Wrapper:** card-style container with `--card` bg, `--border`, `overflow-hidden`
+- **Mobile:** full width, single column
+- **Desktop:** left column of 2-column grid (right column = QR code)
+- **Loading state:** skeleton with equalizer placeholder, `animate-pulse`
+
+### Venue Settings Page
+
+Deferred to post-MVP. Not included in this design spec.
+
+### Stats Row
+
+The dashboard stats row shows **2 stat cards** (matching MVP spec):
+- Listeners (active SSE connections)
+- Songs played
+
+Each stat card: icon (Lucide, 20px) + number (`title-lg`, tabular figures) + label (`label`, uppercase). Compact horizontal layout on mobile, row of cards on desktop.
+
+---
+
+## 12. Anti-Patterns to Avoid (Do NOT)
 
 - **No emojis as icons** — use Lucide SVG icons exclusively
 - **No hardcoded colors** — always use CSS variables via Tailwind
