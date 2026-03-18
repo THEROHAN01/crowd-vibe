@@ -289,3 +289,10 @@ Built with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-st
 ## License
 
 CrowdVibe is [MIT licensed](LICENSE).
+
+---
+
+<p align="center">
+  Built with 🎵 by <a href="https://github.com/rohan">Rohan</a><br>
+  <sub>Because the crowd knows what it wants to hear.</sub>
+</p>
