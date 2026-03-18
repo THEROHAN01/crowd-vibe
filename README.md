@@ -293,6 +293,6 @@ CrowdVibe is [MIT licensed](LICENSE).
 ---
 
 <p align="center">
-  Built with 🎵 by <a href="https://github.com/rohan">Rohan</a><br>
+  Made with 💜 by Rohan Salunkhe<br>
   <sub>Because the crowd knows what it wants to hear.</sub>
 </p>

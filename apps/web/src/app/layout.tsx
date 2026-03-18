@@ -50,17 +50,7 @@ export default function RootLayout({
 						<Header />
 						<div id="main-content">{children}</div>
 						<footer className="border-border border-t px-4 py-3 text-center text-muted-foreground text-xs">
-							Built with{" "}
-							<span aria-label="music" role="img">🎵</span>{" "}
-							by{" "}
-							<a
-								href="https://github.com/rohan"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="font-medium text-primary transition-colors hover:text-primary/80"
-							>
-								Rohan
-							</a>
+							Made with <span className="text-primary">&#9829;</span> by Rohan Salunkhe
 						</footer>
 					</div>
 				</Providers>
