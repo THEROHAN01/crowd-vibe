@@ -136,7 +136,9 @@ export default function SessionDashboard({
       {/* Owner Song Search + Add */}
       <div className="bg-card border border-border rounded-lg p-4">
         <h2 className="font-heading font-semibold mb-3">Add Songs</h2>
+        <label className="sr-only" htmlFor="owner-song-search">Search for songs</label>
         <Input
+          id="owner-song-search"
           placeholder="Search for songs..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -147,7 +149,7 @@ export default function SessionDashboard({
             {track.thumbnailUrl && <img src={track.thumbnailUrl} alt="" className="w-10 h-10 rounded" />}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{track.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+              <p className="text-sm text-muted-foreground truncate">{track.artist}</p>
             </div>
             <Button size="sm" variant="outline" onClick={() => addSong.mutate({ sessionId, providerId: track.providerId })}>
               Add

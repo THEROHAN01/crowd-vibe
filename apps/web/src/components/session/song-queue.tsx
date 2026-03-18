@@ -48,7 +48,7 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{song.title}</p>
               {song.artist && (
-                <p className="text-xs text-muted-foreground truncate">{song.artist}</p>
+                <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
               )}
             </div>
             <div className="flex flex-col items-center">

@@ -54,7 +54,9 @@ export default function JoinPage() {
           )}
         </div>
 
+        <label className="sr-only" htmlFor="guest-name">Your name</label>
         <Input
+          id="guest-name"
           placeholder="Your name (optional)"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
@@ -14,6 +14,7 @@ import { trpc, queryClient } from "@/utils/trpc";
 import { toast } from "sonner";
 
 export default function SongSearch({ sessionId }: { sessionId: string }) {
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
@@ -39,6 +40,7 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
         toast.success("Song added to queue!");
         queryClient.invalidateQueries();
         setQuery("");
+        setOpen(false);
       },
       onError: (err) => {
         toast.error(err.message);
@@ -47,7 +49,7 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
   );
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button variant="tonal" className="w-full" size="lg">
@@ -58,7 +60,9 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
       />
       <SheetContent side="bottom" className="rounded-t-2xl" showCloseButton={false}>
         <div className="p-4 border-b">
+          <label className="sr-only" htmlFor="song-search">Search songs</label>
           <Input
+            id="song-search"
             autoFocus
             placeholder="Search songs..."
             value={query}
@@ -80,7 +84,7 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{track.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+                <p className="text-sm text-muted-foreground truncate">{track.artist}</p>
               </div>
               <Button
                 size="sm"

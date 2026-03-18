@@ -14,7 +14,7 @@ export default function YouTubePlayer({ videoId, onEnded }: YouTubePlayerProps) 
   }, [onEnded]);
 
   return (
-    <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
+    <div className="w-full aspect-video rounded-lg overflow-hidden bg-background">
       <YouTube
         videoId={videoId}
         opts={{
