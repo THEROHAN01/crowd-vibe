@@ -60,9 +60,11 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 			/>
 			<SheetContent
 				side="bottom"
-				className="rounded-t-2xl"
+				className="rounded-t-2xl bg-card"
 				showCloseButton={false}
 			>
+				{/* Drag handle */}
+				<div className="mx-auto mt-2 mb-1 h-1 w-8 rounded-full bg-muted-foreground/40" />
 				<div className="border-b p-4">
 					<label className="sr-only" htmlFor="song-search">
 						Search songs

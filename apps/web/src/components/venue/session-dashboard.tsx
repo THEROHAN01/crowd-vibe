@@ -126,7 +126,8 @@ export default function SessionDashboard({
 				/>
 			</div>
 
-			{/* Now Playing + Player */}
+			{/* Now Playing + QR — side by side on desktop */}
+			<div className="grid gap-6 lg:grid-cols-[1fr_auto]">
 			<div className="rounded-lg border border-border bg-card p-4">
 				<h2 className="mb-3 font-heading font-semibold">Now Playing</h2>
 				{nowPlaying.data ? (
@@ -172,6 +173,10 @@ export default function SessionDashboard({
 				)}
 			</div>
 
+			{/* QR Code */}
+			<QRDisplay joinCode={joinCode} />
+			</div>
+
 			{/* Owner Song Search + Add */}
 			<div className="rounded-lg border border-border bg-card p-4">
 				<h2 className="mb-3 font-heading font-semibold">Add Songs</h2>
@@ -193,7 +198,7 @@ export default function SessionDashboard({
 						{track.thumbnailUrl && (
 							<img
 								src={track.thumbnailUrl}
-								alt=""
+								alt={track.title}
 								className="h-10 w-10 rounded"
 							/>
 						)}
@@ -221,9 +226,6 @@ export default function SessionDashboard({
 				<h2 className="mb-3 font-heading font-semibold">Queue</h2>
 				<QueueManager songs={queue.data ?? []} sessionId={sessionId} />
 			</div>
-
-			{/* QR Code */}
-			<QRDisplay joinCode={joinCode} />
 		</div>
 	);
 }

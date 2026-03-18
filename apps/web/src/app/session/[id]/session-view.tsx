@@ -37,20 +37,6 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 		},
 	});
 
-	if (sessionEnded) {
-		return (
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm">
-				<div className="text-center">
-					<Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-					<h2 className="mb-2 font-heading font-semibold text-2xl">
-						Session Ended
-					</h2>
-					<p className="text-muted-foreground text-sm">Thanks for vibing!</p>
-				</div>
-			</div>
-		);
-	}
-
 	// Extract guest's votes for highlighting
 	const myVotes = useMemo(() => {
 		const map = new Map<string, number>();
@@ -61,7 +47,19 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 	}, [guestInfo.data?.votes]);
 
 	return (
-		<div className="mx-auto flex h-full max-w-lg flex-col">
+		<div className="relative mx-auto flex h-full max-w-lg flex-col">
+			{/* Session Ended Overlay */}
+			{sessionEnded && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur">
+					<div className="text-center">
+						<Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+						<h2 className="mb-2 font-heading font-semibold text-2xl">
+							Session Ended
+						</h2>
+						<p className="text-muted-foreground text-sm">Thanks for vibing!</p>
+					</div>
+				</div>
+			)}
 			{/* Top Bar */}
 			<div className="flex items-center justify-between border-border border-b px-4 py-3">
 				<Logo size="sm" />

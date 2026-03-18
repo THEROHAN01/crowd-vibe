@@ -14,9 +14,8 @@ export default function Home() {
 			}}
 		>
 			<div className="text-center">
-				<h1 className="mb-2 font-bold font-heading text-5xl">
-					<span className="text-foreground">Crowd</span>
-					<span className="text-primary">Vibe</span>
+				<h1 className="mb-2">
+					<Logo size="lg" />
 				</h1>
 				<p className="max-w-md text-lg text-muted-foreground">
 					Let the crowd control the vibe. Vote on songs in real-time at your
