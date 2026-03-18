@@ -60,22 +60,32 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
   --primary: oklch(0.78 0.15 280);           /* #C4B5FD — violet-300 */
   --primary-foreground: oklch(0.15 0.06 280);/* #1E1B4B — dark violet */
 
-  /* Secondary */
-  --secondary: oklch(0.17 0.03 280);         /* tonal surface */
+  /* Secondary (MD3 note: repurposed as surface-container role for shadcn compatibility.
+     shadcn uses "secondary" as a neutral button/badge variant, not a distinct brand hue.
+     This is an intentional adaptation — not an MD3 violation.) */
+  --secondary: oklch(0.17 0.03 280);         /* tonal surface container */
   --secondary-foreground: oklch(0.96 0.01 280);
 
-  /* Accent (now-playing, success) */
+  /* Tertiary / Accent (MD3 tertiary role — maps to emerald for "now-playing", success) */
   --accent: oklch(0.72 0.17 160);            /* #34D399 — emerald-400 */
   --accent-foreground: oklch(0.15 0.04 160);
 
-  /* Destructive (errors, downvote) */
+  /* Error / Destructive (MD3 error role) */
   --destructive: oklch(0.75 0.15 25);        /* #FCA5A5 — red-300 */
   --destructive-foreground: oklch(0.15 0.04 25);
 
-  /* Borders & Rings */
-  --border: oklch(0.25 0.02 280);            /* rgba(255,255,255,0.08) equivalent */
+  /* Surface Variant (MD3: for chips, search bars, secondary containers) */
+  --surface-variant: oklch(0.20 0.025 280);
+  --on-surface-variant: oklch(0.75 0.02 280);
+
+  /* Borders, Outline & Rings */
+  --border: oklch(0.25 0.02 280);            /* MD3 outline-variant equivalent */
+  --outline: oklch(0.40 0.02 280);           /* MD3 outline — higher contrast for important boundaries */
   --input: oklch(0.25 0.02 280);
   --ring: oklch(0.78 0.15 280);              /* matches primary */
+
+  /* Scrim (MD3: modal/sheet backdrop) */
+  --scrim: oklch(0 0 0 / 0.5);
 
   /* Functional */
   --upvote: oklch(0.72 0.17 160);            /* emerald — same as accent */
@@ -123,9 +133,15 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
   --destructive: oklch(0.55 0.2 25);         /* #EF4444 — red-500 */
   --destructive-foreground: oklch(1.0 0 0);
 
+  --surface-variant: oklch(0.95 0.005 280);
+  --on-surface-variant: oklch(0.45 0.01 280);
+
   --border: oklch(0.9 0.005 280);
+  --outline: oklch(0.75 0.01 280);
   --input: oklch(0.9 0.005 280);
   --ring: oklch(0.55 0.2 280);
+
+  --scrim: oklch(0 0 0 / 0.5);
 
   --upvote: oklch(0.47 0.18 160);
   --downvote: oklch(0.55 0.2 25);
@@ -261,7 +277,7 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 - Border: `1px solid var(--border)`
 - Radius: `12px`
 - Padding: `16px`
-- Hover: `+rgba(255,255,255,0.04)` overlay
+- Hover: `+8%` primary color overlay (MD3 hover state layer)
 - Active: `scale(0.98)` for 150ms
 - Now Playing card: additional `border-color: var(--primary)` with subtle `box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent)`
 
@@ -272,16 +288,26 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 | Filled (Primary) | `--primary` | `--primary-foreground` | Main CTAs |
 | Tonal | `--primary/15%` | `--primary` | Secondary actions |
 | Outlined | transparent | `--foreground` | Tertiary actions |
-| Ghost | transparent | `--muted-foreground` | Icon buttons |
+| Text (MD3) | transparent | `--primary` | Tertiary text actions |
+| Icon | transparent | `--on-surface-variant` | Icon-only buttons (with `aria-label`) |
 | Destructive | `--destructive` | white | Dangerous actions |
 
-All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`, hover with MD3 state layer `+8% overlay`, active `scale(0.97)`.
+All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`.
+
+**MD3 State Layers (applied via overlay opacity on content color):**
+
+| State | Overlay | Additional Effect |
+|---|---|---|
+| Hover | 8% | `cursor: pointer` |
+| Focus | 12% | + focus ring (`--ring`) |
+| Pressed | 12% | + `scale(0.97)` |
+| Disabled | 38% opacity on entire element | `cursor: not-allowed`, `pointer-events: none` |
 
 ### Vote Buttons
 
-- Size: `40x40px`, `rounded-full`
-- Idle: `--muted-foreground` icon, transparent bg
-- Hover: `rgba(255,255,255,0.06)` overlay
+- Size: `44x44px`, `rounded-full` (meets minimum touch target; visual icon 20px centered in 44px hit area)
+- Idle: `--on-surface-variant` icon, transparent bg
+- Hover: `8%` overlay (MD3 hover state layer)
 - Active upvote: `--upvote/15%` bg, `--upvote` icon color
 - Active downvote: `--downvote/15%` bg, `--downvote` icon color
 - Tap: `scale(0.85)` for 100ms → spring back
@@ -301,7 +327,7 @@ All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), we
 - Slides from bottom with spring animation (`300ms`)
 - Drag handle: `32x4px`, centered, `--muted-foreground` bg
 - Sheet bg: `--card`, radius `16px 16px 0 0`
-- Backdrop: `rgba(0,0,0,0.5)` + `backdrop-filter: blur(4px)`
+- Backdrop: `var(--scrim)` + `backdrop-filter: blur(4px)`
 - Exit: faster than enter (`200ms`)
 - Dismiss: swipe down, tap backdrop, or Escape key
 
@@ -431,8 +457,10 @@ Preserves state changes while removing all motion.
 | Reduced motion | Respect preference | `prefers-reduced-motion` media query |
 | Color not only | Icons + text | Vote state uses icon direction + color + bg tint |
 | Heading hierarchy | Sequential h1→h6 | One h1 per page, sequential sub-headings |
+| UI component contrast | 3:1 minimum (MD3) | Borders, form controls, icons conveying information |
 | Alt text | All meaningful images | Thumbnail alt = song title |
 | Input labels | Visible, not placeholder-only | Label element above every input |
+| Disabled states | 38% opacity (MD3) | All disabled interactive elements |
 
 ---
 
