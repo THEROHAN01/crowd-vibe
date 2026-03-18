@@ -1,5 +1,8 @@
 {
 	"name": "crowd-vibe",
+	"description": "Crowd-controlled music for venues — let your customers vote on what plays next",
+	"license": "MIT",
+	"keywords": ["music", "venue", "voting", "real-time", "crowdsource", "nextjs", "trpc"],
 	"private": true,
 	"workspaces": [
 		"apps/*",

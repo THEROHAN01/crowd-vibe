@@ -6,6 +6,18 @@
   </picture>
 </p>
 
+<p align="center">
+  <strong>Crowd-controlled music for venues</strong><br>
+  Let your customers vote on what plays next
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
+  <img src="https://img.shields.io/badge/next.js-16-black" alt="Next.js 16">
+  <img src="https://img.shields.io/badge/typescript-5-blue" alt="TypeScript">
+  <img src="https://img.shields.io/badge/tailwindcss-4-38bdf8" alt="TailwindCSS 4">
+</p>
+
 ---
 
 ## What is CrowdVibe?

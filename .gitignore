@@ -44,6 +44,18 @@ lerna-debug.log*
 coverage
 .nyc_output
 
+# Next.js
+.next
+
+# Claude Code / AI tooling
+.claude/
+.superpowers/
+skills-lock.json
+
+# Project scaffolding metadata
+.mcp.json
+bts.jsonc
+
 # Misc
 *.tgz
 .cache
