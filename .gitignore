@@ -47,10 +47,9 @@ coverage
 # Next.js
 .next
 
-# Claude Code / AI tooling
-.claude/
+# Claude Code — keep skills + settings.json, ignore personal config
+.claude/settings.local.json
 .superpowers/
-skills-lock.json
 
 # Project scaffolding metadata
 .mcp.json
