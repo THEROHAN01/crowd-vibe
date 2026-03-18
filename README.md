@@ -6,8 +6,7 @@
   alt="CrowdVibe" 
   src="apps/web/public/logo-full.svg" 
   width="1000"
-  style="padding-left: 16px;"
->
+  style="padding-left: 40px;">
   </picture>
 </p>
 
