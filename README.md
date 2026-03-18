@@ -47,6 +47,26 @@ CrowdVibe lets bars, cafes, and event spaces hand the DJ booth to their crowd. V
 - **Fair by default** — Suggestion limits, cooldowns, and auto-skip prevent any one person from dominating.
 - **Dark-first** — Built for dimly lit venues where music happens. Album art pops on dark backgrounds.
 
+## Screenshots
+
+<p align="center">
+  <img src="apps/web/public/screenshots/landing-dark.png" alt="CrowdVibe Landing Page" width="800">
+</p>
+
+<p align="center">
+  <em>Landing page — dark-first violet design with equalizer logomark</em>
+</p>
+
+<details>
+<summary>More screenshots</summary>
+
+<p align="center">
+  <img src="apps/web/public/screenshots/login-dark.png" alt="CrowdVibe Sign Up" width="800">
+</p>
+<p align="center"><em>Sign up — branded auth with Logo and gradient background</em></p>
+
+</details>
+
 ## How It Works
 
 ```
