@@ -1,99 +1,82 @@
-# crowd-vibe
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/logo-full-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="apps/web/public/logo-full.svg">
+    <img alt="CrowdVibe" src="apps/web/public/logo-full.svg" width="240">
+  </picture>
+</p>
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, TRPC, and more.
+<p align="center">
+  <strong>Crowd-controlled music for venues</strong><br>
+  Let your customers vote on what plays next
+</p>
 
-## Features
+---
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **tRPC** - End-to-end type-safe APIs
-- **Prisma** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Biome** - Linting and formatting
+## What is CrowdVibe?
+
+CrowdVibe lets bars, cafes, and event spaces hand the DJ booth to their crowd. Venue owners start a music session, customers scan a QR code to join, and the crowd votes in real time to decide what plays next. The result: higher engagement, happier customers, and a playlist that actually matches the room.
+
+## How It Works
+
+1. **Venue starts a session** -- The owner creates a music session from the dashboard and displays a QR code.
+2. **Customers scan & browse** -- Guests scan the QR code on their phone, see the current queue, and search for songs.
+3. **Crowd votes** -- Everyone votes on upcoming tracks. The highest-voted song plays next.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16 |
+| UI | React 19, TailwindCSS 4, shadcn/ui |
+| API | tRPC 11 |
+| Database | Prisma 7, PostgreSQL |
+| Auth | Better-Auth |
+| Music | YouTube API |
+| Real-time | Server-Sent Events (SSE) |
 
 ## Getting Started
 
-First, install the dependencies:
-
 ```bash
+# Install dependencies
 npm install
-```
 
-## Database Setup
+# Configure environment variables
+cp apps/web/.env.example apps/web/.env
+# then fill in your database URL, YouTube API key, etc.
 
-This project uses PostgreSQL with Prisma.
-
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
-
-```bash
+# Push the schema to your database
 npm run db:push
+
+# Start the dev server
+npm run dev:web
 ```
 
-Then, run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
-
-## UI Customization
-
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@crowd-vibe/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Git Hooks and Formatting
-
-- Format and lint fix: `npm run check`
+Open [http://localhost:3001](http://localhost:3001) to see the app.
 
 ## Project Structure
 
 ```
 crowd-vibe/
 ├── apps/
-│   └── web/         # Fullstack application (Next.js)
+│   └── web/          # Next.js application (pages, components, styles)
 ├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
+│   ├── api/          # tRPC routers & business logic
+│   ├── auth/         # Better-Auth configuration
+│   ├── config/       # Shared config (Tailwind, TypeScript)
+│   ├── db/           # Prisma schema & database client
+│   ├── env/          # Environment variable validation
+│   └── ui/           # Shared shadcn/ui components & design tokens
 ```
 
-## Available Scripts
+## Scripts
 
-- `npm run dev`: Start all applications in development mode
-- `npm run build`: Build all applications
-- `npm run dev:web`: Start only the web application
-- `npm run check-types`: Check TypeScript types across all apps
-- `npm run db:push`: Push schema changes to database
-- `npm run db:generate`: Generate database client/types
-- `npm run db:migrate`: Run database migrations
-- `npm run db:studio`: Open database studio UI
-- `npm run check`: Run Biome formatting and linting
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start all apps in dev mode |
+| `npm run dev:web` | Start only the web app |
+| `npm run build` | Build all apps |
+| `npm run db:push` | Push schema changes to the database |
+| `npm run db:studio` | Open the database studio UI |
+| `npm run check` | Run Biome formatting & linting |
+| `npm run check-types` | Type-check across all packages |
