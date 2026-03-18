@@ -29,7 +29,7 @@ export default function VoteButton({ songId, direction, isActive }: VoteButtonPr
     <button
       onClick={() => castVote.mutate({ songId, value: direction === "up" ? 1 : -1 })}
       disabled={castVote.isPending}
-      className={`w-11 h-11 flex items-center justify-center rounded-full transition-transform active:scale-[0.85] ${isActive ? activeClass : "text-on-surface-variant"}`}
+      className={`w-11 h-11 flex items-center justify-center rounded-full cursor-pointer transition-transform duration-instant ease-spring active:scale-[0.85] ${isActive ? activeClass : "text-on-surface-variant hover:bg-muted/50"}`}
     >
       <Icon className="w-5 h-5" />
     </button>

@@ -53,7 +53,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
+    <div className="mx-auto w-full mt-10 max-w-sm p-6">
       <div className="flex justify-center mb-4">
         <Logo />
       </div>

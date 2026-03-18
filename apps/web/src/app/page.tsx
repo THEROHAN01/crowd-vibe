@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div
       className="flex flex-col items-center justify-center h-full px-4 gap-8"
-      style={{ background: "radial-gradient(ellipse at center, oklch(0.55 0.2 280 / 0.05), transparent)" }}
+      style={{ background: "radial-gradient(ellipse at center, color-mix(in oklch, var(--primary) 5%, transparent), transparent)" }}
     >
       <div className="text-center">
         <h1 className="font-heading text-5xl font-bold mb-2">

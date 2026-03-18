@@ -40,7 +40,10 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-4 gap-6 bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.2_280/0.05),transparent)]">
+    <div
+      className="flex flex-col items-center justify-center h-full px-4 gap-6"
+      style={{ background: "radial-gradient(ellipse at center, color-mix(in oklch, var(--primary) 5%, transparent), transparent)" }}
+    >
       <Logo />
 
       <div className="w-full max-w-sm rounded-xl border border-primary/20 shadow-lg shadow-primary/5 bg-card p-6 grid gap-4">
