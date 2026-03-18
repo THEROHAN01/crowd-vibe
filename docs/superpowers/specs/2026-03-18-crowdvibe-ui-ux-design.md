@@ -98,6 +98,16 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
   /* Radius */
   --radius: 0.75rem;                          /* 12px — MD3 "Medium" shape. NOTE: This is a deliberate change from the current 0.625rem (10px). All shadcn components derive border-radius from this value, so every rounded corner in the app will increase by 2px. */
 
+  /* Sidebar tokens (dark mode) */
+  --sidebar: oklch(0.10 0.02 280);
+  --sidebar-foreground: oklch(0.96 0.01 280);
+  --sidebar-primary: oklch(0.78 0.15 280);
+  --sidebar-primary-foreground: oklch(0.15 0.06 280);
+  --sidebar-accent: oklch(0.17 0.03 280);
+  --sidebar-accent-foreground: oklch(0.96 0.01 280);
+  --sidebar-border: oklch(0.25 0.02 280);
+  --sidebar-ring: oklch(0.78 0.15 280);
+
   /* Chart colors */
   --chart-1: oklch(0.78 0.15 280);
   --chart-2: oklch(0.72 0.17 160);
@@ -166,16 +176,24 @@ Based on MD3's semantic color roles with HCT-informed tonal values.
 
 ### Tailwind @theme inline Mappings
 
-These mappings are **required** for TailwindCSS 4 to generate utility classes from the custom CSS variables:
+**IMPORTANT:** These are ADDITIONS to the existing `@theme inline` block in `globals.css`, NOT a replacement. The existing `@theme inline` already contains ~30 `--color-*` mappings for shadcn's core tokens (`--color-background`, `--color-primary`, `--color-card`, `--color-border`, all radius tokens, all sidebar tokens). Those MUST be preserved. Add the following entries to the existing block:
 
 ```css
 @theme inline {
-  /* Fonts */
+  /* ... KEEP all existing shadcn color/radius/sidebar mappings ... */
+
+  /* Font overrides (replace existing --font-sans) */
   --font-sans: "DM Sans", ui-sans-serif, sans-serif;
   --font-heading: "Space Grotesk", ui-sans-serif, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
-  /* Custom functional colors */
+  /* New MD3 surface tokens */
+  --color-surface-variant: var(--surface-variant);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-scrim: var(--scrim);
+
+  /* Functional color tokens */
   --color-upvote: var(--upvote);
   --color-downvote: var(--downvote);
   --color-now-playing: var(--now-playing);
@@ -186,7 +204,7 @@ These mappings are **required** for TailwindCSS 4 to generate utility classes fr
   /* Motion tokens */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --duration-fast: 100ms;
+  --duration-instant: 100ms;
   --duration-micro: 150ms;
   --duration-standard: 200ms;
   --duration-emphasis: 300ms;
@@ -232,7 +250,15 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 | **Body / UI** | DM Sans | 400, 500, 600 | `next/font/google` with `display: swap` |
 | **Monospace** | Geist Mono | 400 | Already loaded in project |
 
-**Required change in `apps/web/src/app/layout.tsx`:** Replace the current `Geist` and `Geist_Mono` font imports with `DM_Sans` and `Space_Grotesk` from `next/font/google`. Keep `Geist_Mono` for monospace. Inject CSS variables `--font-sans`, `--font-heading`, `--font-mono` on the `<body>` element.
+**Required change in `apps/web/src/app/layout.tsx`:** Replace the current `Geist` and `Geist_Mono` font imports with `DM_Sans` and `Space_Grotesk` from `next/font/google`. Keep `Geist_Mono` for monospace. Use the `variable` option to inject CSS variables:
+
+```typescript
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-heading" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+```
+
+Apply all three variables on `<body>`: `className={`${dmSans.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}`. This replaces the current `--font-geist-sans` and `--font-geist-mono` variable names.
 
 ### Type Scale
 
@@ -246,7 +272,7 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 | `body` | 16px | 400 | 1.6 | 0 | DM Sans | Body text |
 | `body-sm` | 14px | 400 | 1.5 | 0 | DM Sans | Secondary text, artist names |
 | `label` | 12px | 500 | 1.4 | 0.04em | DM Sans | Uppercase eyebrows ("NOW PLAYING") |
-| `code` | 14px | 400 | 1.5 | 0.02em | Geist Mono | Join codes |
+| `code` | 14px (default), 24px (join code display) | 400 | 1.5 | 0.02em | Geist Mono | Join codes, technical text |
 
 ### Typography Rules
 
@@ -296,7 +322,10 @@ box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 10%, transparent);
 | Icon | transparent | `--on-surface-variant` | Icon-only buttons (with `aria-label`) |
 | Destructive | `--destructive` | white | Dangerous actions |
 
-All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`. **Requires modifying `packages/ui/src/components/button.tsx`** — current default height is 32px, sm is 28px, lg is 36px. All size variants must be increased to meet the 44px minimum (`h-11` default, `h-10` for sm, `h-12` for lg).
+All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), weight `600`. **Requires modifying `packages/ui/src/components/button.tsx`:**
+- Remove `rounded-none` from base class and size variants (current `base-lyra` style applies `rounded-none` — must be removed for radius tokens to take effect)
+- Increase all size variants: `default` → `h-11` (44px), `sm` → `h-9` (36px, exception: below 44px for compact contexts like queue item actions), `lg` → `h-12` (48px), `icon` → `size-11` (44px)
+- Same `rounded-none` removal applies to `packages/ui/src/components/input.tsx` — change `h-8` to `h-11` (44px) and remove `rounded-none`
 
 **MD3 State Layers (applied via overlay opacity on content color):**
 
@@ -398,7 +427,7 @@ All buttons: min-height `44px`, `rounded-md` (10px, derived from `--radius`), we
 |---|---|---|
 | `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Most UI transitions |
 | `--ease-spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Vote tap, button press |
-| `--duration-fast` | `100ms` | Scale feedback |
+| `--duration-instant` | `100ms` | Scale feedback |
 | `--duration-micro` | `150ms` | Hover, color changes |
 | `--duration-standard` | `200ms` | Card transitions |
 | `--duration-emphasis` | `300ms` | Sheet open, queue reorder |
@@ -467,6 +496,8 @@ Preserves state changes while removing all motion.
 | Alt text | All meaningful images | Thumbnail alt = song title |
 | Input labels | Visible, not placeholder-only | Label element above every input |
 | Disabled states | 38% opacity (MD3) | All disabled interactive elements |
+| ARIA live regions | `aria-live="polite"` | Queue container + Now Playing card (SSE-driven content changes) |
+| Skip navigation | Skip to main content link | Especially on guest session view with top bar |
 
 ---
 
@@ -480,6 +511,18 @@ Preserves state changes while removing all motion.
 | Large desktop | 1440px+ | Max container width, centered with comfortable margins |
 
 **Container:** `max-w-4xl` for dashboard, `max-w-lg` for guest session view, `max-w-sm` for auth forms.
+
+### Z-Index Scale
+
+| Level | Value | Usage |
+|---|---|---|
+| Base | `z-0` | Default content |
+| Sticky | `z-10` | Sticky top bar, sticky bottom CTA |
+| Dropdown | `z-20` | Dropdown menus, tooltips |
+| Sheet | `z-40` | Bottom sheet (song search) |
+| Scrim | `z-40` | Backdrop behind sheet |
+| Overlay | `z-50` | Session ended overlay |
+| Toast | `z-[100]` | Sonner toast notifications (always on top) |
 
 ---
 
@@ -512,7 +555,7 @@ Preserves state changes while removing all motion.
 
 | Phase | Scope | Impact |
 |---|---|---|
-| **Phase 1** | Color system + typography + **full globals.css rewrite** (replace entire `:root`, `.dark`, and `@theme inline` blocks) + font loading in `layout.tsx` | Foundation for everything |
+| **Phase 1** | Color system + typography + globals.css update (replace `:root` and `.dark` color blocks with new tokens; ADD new entries to existing `@theme inline` — do NOT delete existing shadcn mappings) + font loading in `layout.tsx` | Foundation for everything |
 | **Phase 2** | Component restyling (buttons, cards, inputs) | Immediate visual improvement |
 | **Phase 3** | Page layouts (guest session, dashboard, join, auth) | User experience transformation |
 | **Phase 4** | Motion & micro-interactions (vote animation, queue reorder, sheets) | Polish & delight |
