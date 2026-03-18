@@ -1,9 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" fill="none">
-  <!-- Logomark -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 195 40" fill="none">
   <rect x="4" y="20" width="8" height="16" rx="4" fill="#7C3AED"/>
   <rect x="16" y="8" width="8" height="28" rx="4" fill="#7C3AED"/>
   <rect x="28" y="14" width="8" height="22" rx="4" fill="#7C3AED"/>
-  <!-- Wordmark -->
   <text x="46" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">
     <tspan fill="#1C1917">Crowd</tspan><tspan fill="#7C3AED">Vibe</tspan>
   </text>
