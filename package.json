@@ -15,7 +15,15 @@
     "db:studio": "npm run db:studio --workspace @crowd-vibe/db",
     "db:generate": "npm run db:generate --workspace @crowd-vibe/db",
     "db:migrate": "npm run db:migrate --workspace @crowd-vibe/db",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "test": "dotenv -e .env.test -- vitest run --project unit",
+    "test:integration": "dotenv -e .env.test -- vitest run --project integration",
+    "test:all": "dotenv -e .env.test -- vitest run",
+    "test:watch": "dotenv -e .env.test -- vitest --project unit",
+    "test:coverage": "dotenv -e .env.test -- vitest run --coverage",
+    "test:db:up": "docker compose -f docker-compose.test.yml up -d --wait",
+    "test:db:down": "docker compose -f docker-compose.test.yml down",
+    "test:db:reset": "dotenv -e .env.test -- npx prisma db push --force-reset --config=packages/db/prisma.config.ts"
   },
   "dependencies": {
     "@crowd-vibe/env": "*",
@@ -26,7 +34,10 @@
     "@biomejs/biome": "^2.2.0",
     "@crowd-vibe/config": "*",
     "@types/node": "^22.13.14",
-    "typescript": "^5"
+    "@vitest/coverage-v8": "^4.1.0",
+    "dotenv-cli": "^11.0.0",
+    "typescript": "^5",
+    "vitest": "^4.1.0"
   },
   "packageManager": "npm@10.9.2"
 }

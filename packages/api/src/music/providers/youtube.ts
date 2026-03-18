@@ -32,7 +32,7 @@ interface YouTubeVideoItem {
   };
 }
 
-function parseDuration(iso: string): number {
+export function parseDuration(iso: string): number {
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return 0;
   const hours = Number.parseInt(match[1] || "0", 10);
@@ -41,7 +41,7 @@ function parseDuration(iso: string): number {
   return (hours * 3600 + minutes * 60 + seconds) * 1000;
 }
 
-function getThumbnail(thumbnails: YouTubeVideoItem["snippet"]["thumbnails"]): string | null {
+export function getThumbnail(thumbnails: YouTubeVideoItem["snippet"]["thumbnails"]): string | null {
   return thumbnails.high?.url ?? thumbnails.medium?.url ?? thumbnails.default?.url ?? null;
 }
 

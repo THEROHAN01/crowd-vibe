@@ -5,13 +5,15 @@ interface RateLimitEntry {
 
 export class RateLimiter {
   private entries = new Map<string, RateLimitEntry>();
+  private cleanupTimer: ReturnType<typeof setInterval>;
 
   constructor(
     private maxRequests: number,
     private windowMs: number
   ) {
     // Sweep expired entries every 5 minutes to prevent unbounded memory growth
-    setInterval(() => this.sweep(), 5 * 60 * 1000);
+    this.cleanupTimer = setInterval(() => this.sweep(), 5 * 60 * 1000);
+    this.cleanupTimer.unref();
   }
 
   check(key: string): { allowed: boolean; remaining: number } {
@@ -29,6 +31,10 @@ export class RateLimiter {
 
     entry.count++;
     return { allowed: true, remaining: this.maxRequests - entry.count };
+  }
+
+  destroy() {
+    clearInterval(this.cleanupTimer);
   }
 
   private sweep() {

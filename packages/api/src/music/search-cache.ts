@@ -6,11 +6,13 @@ interface CacheEntry<T> {
 export class SearchCache {
   private cache = new Map<string, CacheEntry<unknown>>();
   private ttlMs: number;
+  private cleanupTimer: ReturnType<typeof setInterval>;
 
   constructor(ttlMinutes: number = 15) {
     this.ttlMs = ttlMinutes * 60 * 1000;
     // Sweep expired entries every 5 minutes
-    setInterval(() => this.sweep(), 5 * 60 * 1000);
+    this.cleanupTimer = setInterval(() => this.sweep(), 5 * 60 * 1000);
+    this.cleanupTimer.unref();
   }
 
   get<T>(key: string): T | null {
@@ -29,6 +31,10 @@ export class SearchCache {
 
   makeKey(provider: string, query: string): string {
     return `${provider}:${query.toLowerCase().trim()}`;
+  }
+
+  destroy() {
+    clearInterval(this.cleanupTimer);
   }
 
   private sweep() {

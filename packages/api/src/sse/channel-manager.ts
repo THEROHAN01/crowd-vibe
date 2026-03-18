@@ -41,6 +41,19 @@ class SSEChannelManager {
   getListenerCount(sessionId: string): number {
     return this.channels.get(sessionId)?.size ?? 0;
   }
+
+  reset() {
+    for (const channel of this.channels.values()) {
+      for (const writer of channel) {
+        try {
+          writer.close();
+        } catch {
+          // Writer already closed
+        }
+      }
+    }
+    this.channels.clear();
+  }
 }
 
 const globalForSSE = globalThis as unknown as {
