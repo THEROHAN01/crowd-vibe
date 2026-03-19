@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Music, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import YouTubePlayer from "@/components/player/youtube-player";
 import LiveBadge from "@/components/ui/live-badge";
 import StatCard from "@/components/ui/stat-card";
@@ -72,7 +73,13 @@ export default function SessionDashboard({
 	);
 	const addSong = useMutation(
 		trpc.song.add.mutationOptions({
-			onSuccess: () => queryClient.invalidateQueries(),
+			onSuccess: () => {
+				toast.success("Song added to queue!");
+				queryClient.invalidateQueries();
+			},
+			onError: (err) => {
+				toast.error(err.message);
+			},
 		}),
 	);
 
