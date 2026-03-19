@@ -139,11 +139,11 @@ export default function SessionDashboard({
 								onEnded={handleSongEnded}
 							/>
 						</div>
-						<div className="flex items-center justify-between">
-							<div>
-								<p className="font-medium">{nowPlaying.data.title}</p>
+						<div className="flex items-center justify-between gap-2">
+							<div className="min-w-0">
+								<p className="truncate font-medium">{nowPlaying.data.title}</p>
 								{nowPlaying.data.artist && (
-									<p className="text-muted-foreground text-sm">
+									<p className="truncate text-muted-foreground text-sm">
 										{nowPlaying.data.artist}
 									</p>
 								)}

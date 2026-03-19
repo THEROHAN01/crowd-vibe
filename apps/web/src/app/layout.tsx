@@ -40,7 +40,7 @@ export default function RootLayout({
 				className={`${dmSans.variable} ${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
 			>
 				<Providers>
-					<div className="grid h-svh grid-rows-[auto_1fr_auto]">
+					<div className="grid h-svh grid-rows-[auto_1fr_auto] overflow-x-hidden">
 						<a
 							href="#main-content"
 							className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"

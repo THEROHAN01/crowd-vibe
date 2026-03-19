@@ -47,7 +47,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 	}, [guestInfo.data?.votes]);
 
 	return (
-		<div className="relative mx-auto flex h-full max-w-lg flex-col">
+		<div className="relative mx-auto flex h-full w-full max-w-lg flex-col overflow-hidden">
 			{/* Session Ended Overlay */}
 			{sessionEnded && (
 				<div
@@ -84,7 +84,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 				</div>
 
 				{/* Queue */}
-				<div className="flex-1 overflow-y-auto px-4 py-3">
+				<div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
 					<h2 className="mb-2 font-semibold text-muted-foreground text-sm">
 						UP NEXT
 					</h2>

@@ -32,7 +32,7 @@ export default function NowPlaying({ song }: NowPlayingProps) {
 			<p className="mb-1 font-medium text-muted-foreground text-xs uppercase tracking-widest">
 				Now Playing
 			</p>
-			<div className="flex items-center gap-4">
+			<div className="flex items-center gap-4 overflow-hidden">
 				{song.thumbnailUrl && (
 					<Image
 						src={song.thumbnailUrl}

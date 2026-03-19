@@ -45,7 +45,7 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
 				return (
 					<div
 						key={song.id}
-						className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50"
+						className="flex items-center gap-3 overflow-hidden rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50"
 					>
 						{song.thumbnailUrl && (
 							<Image
@@ -53,7 +53,7 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
 								alt=""
 								width={48}
 								height={48}
-								className="h-12 w-12 rounded-md object-cover"
+								className="h-12 w-12 shrink-0 rounded-md object-cover"
 							/>
 						)}
 						<div className="min-w-0 flex-1">
@@ -64,7 +64,7 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
 								</p>
 							)}
 						</div>
-						<div className="flex flex-col items-center">
+						<div className="flex shrink-0 flex-col items-center">
 							<VoteButton
 								songId={song.id}
 								direction="up"
