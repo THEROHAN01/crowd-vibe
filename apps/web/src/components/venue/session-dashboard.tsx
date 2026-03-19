@@ -133,6 +133,7 @@ export default function SessionDashboard({
 					icon={Users}
 					value={stats.data?.listenerCount ?? 0}
 					label="Listeners"
+					live
 				/>
 				<StatCard
 					icon={Music}

@@ -4,13 +4,15 @@ interface StatCardProps {
 	icon: LucideIcon;
 	value: number;
 	label: string;
+	/** Enable aria-live announcements for realtime values */
+	live?: boolean;
 }
 
-export default function StatCard({ icon: Icon, value, label }: StatCardProps) {
+export default function StatCard({ icon: Icon, value, label, live = false }: StatCardProps) {
 	return (
 		<div
 			className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"
-			role="status"
+			role={live ? "status" : undefined}
 			aria-label={`${value} ${label}`}
 		>
 			<Icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
