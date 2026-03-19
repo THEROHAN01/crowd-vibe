@@ -75,7 +75,12 @@ export class YouTubeProvider implements MusicProvider {
 			throw new Error(`YouTube API error: ${res.status} ${errorBody}`);
 		}
 
-		const data = await res.json();
+		let data: { items?: YouTubeSearchItem[]; nextPageToken?: string };
+		try {
+			data = await res.json();
+		} catch {
+			throw new Error("YouTube API returned invalid JSON");
+		}
 		const items: YouTubeSearchItem[] = data.items ?? [];
 
 		return {
@@ -100,7 +105,12 @@ export class YouTubeProvider implements MusicProvider {
 		const res = await fetch(url.toString());
 		if (!res.ok) return null;
 
-		const data = await res.json();
+		let data: { items?: YouTubeVideoItem[] };
+		try {
+			data = await res.json();
+		} catch {
+			return null;
+		}
 		const item: YouTubeVideoItem | undefined = data.items?.[0];
 		if (!item) return null;
 

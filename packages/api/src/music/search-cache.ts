@@ -6,10 +6,12 @@ interface CacheEntry<T> {
 export class SearchCache {
 	private cache = new Map<string, CacheEntry<unknown>>();
 	private ttlMs: number;
+	private maxSize: number;
 	private cleanupTimer: ReturnType<typeof setInterval>;
 
-	constructor(ttlMinutes = 15) {
+	constructor(ttlMinutes = 15, maxSize = 500) {
 		this.ttlMs = ttlMinutes * 60 * 1000;
+		this.maxSize = maxSize;
 		// Sweep expired entries every 5 minutes
 		this.cleanupTimer = setInterval(() => this.sweep(), 5 * 60 * 1000);
 		this.cleanupTimer.unref();
@@ -26,6 +28,11 @@ export class SearchCache {
 	}
 
 	set<T>(key: string, data: T): void {
+		// Evict oldest entry if at capacity
+		if (this.cache.size >= this.maxSize) {
+			const oldestKey = this.cache.keys().next().value;
+			if (oldestKey) this.cache.delete(oldestKey);
+		}
 		this.cache.set(key, { data, expiresAt: Date.now() + this.ttlMs });
 	}
 

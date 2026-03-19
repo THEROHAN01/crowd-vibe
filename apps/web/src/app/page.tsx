@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@crowd-vibe/ui/components/button";
 import Link from "next/link";
 import Logo from "@/components/ui/logo";

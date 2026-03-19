@@ -54,7 +54,7 @@ export default function JoinPage() {
 		>
 			<Logo />
 
-			<div className="grid w-full max-w-sm gap-4 rounded-xl border border-primary/20 bg-card p-6 shadow-lg shadow-primary/5">
+			<div className="grid w-full max-w-sm gap-4 rounded-lg border border-primary/20 bg-card p-6 shadow-lg shadow-primary/5">
 				<div className="text-center">
 					<h1 className="font-bold font-heading text-2xl">
 						{sessionInfo.data?.venueName}

@@ -26,8 +26,8 @@ export default function Dashboard({
 	// No venue yet — show create form
 	if (!venue) {
 		return (
-			<div className="container mx-auto max-w-lg px-4 py-8">
-				<h1 className="mb-6 font-bold text-2xl">Create Your Venue</h1>
+			<div className="container mx-auto max-w-md px-4 py-8">
+				<h1 className="mb-6 font-bold font-heading text-2xl">Create Your Venue</h1>
 				<CreateVenueForm onCreated={() => venues.refetch()} />
 			</div>
 		);
@@ -38,8 +38,8 @@ export default function Dashboard({
 	// Venue exists but no active session — show start session
 	if (!activeSession) {
 		return (
-			<div className="container mx-auto max-w-lg px-4 py-8">
-				<h1 className="mb-2 font-bold text-2xl">{venue.name}</h1>
+			<div className="container mx-auto max-w-md px-4 py-8">
+				<h1 className="mb-2 font-bold font-heading text-2xl">{venue.name}</h1>
 				<p className="mb-6 text-muted-foreground">No active session</p>
 				<StartSessionForm
 					venueId={venue.id}

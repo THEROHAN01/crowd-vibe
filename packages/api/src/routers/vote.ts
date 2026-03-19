@@ -3,8 +3,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { guestProcedure, router } from "../index";
 import { advanceQueue } from "../lib/queue-helpers";
+import { RateLimiter } from "../lib/rate-limiter";
 import { parseVenueSettings } from "../lib/settings";
 import { channelManager } from "../sse/channel-manager";
+
+const voteRateLimiter = new RateLimiter(30, 60_000); // 30 votes per minute per guest
 
 export const voteRouter = router({
 	cast: guestProcedure
@@ -15,6 +18,11 @@ export const voteRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const { allowed } = voteRateLimiter.check(ctx.guestId);
+			if (!allowed) {
+				throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Slow down! Too many votes." });
+			}
+
 			// Verify song belongs to guest's session
 			const song = await prisma.song.findUnique({
 				where: { id: input.songId },

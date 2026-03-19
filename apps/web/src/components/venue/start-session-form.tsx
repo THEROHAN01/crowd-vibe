@@ -46,6 +46,13 @@ export default function StartSessionForm({
 					placeholder="Friday Night Vibes"
 				/>
 			</div>
+			<div className="grid gap-2">
+				<Label>Music Provider</Label>
+				<div className="flex gap-2">
+					<Button type="button" variant="default" size="sm" className="pointer-events-none">YouTube</Button>
+					<Button type="button" variant="outline" size="sm" disabled className="opacity-50">Spotify (Coming Soon)</Button>
+				</div>
+			</div>
 			<Button type="submit" disabled={startSession.isPending}>
 				{startSession.isPending ? "Starting..." : "Start Session"}
 			</Button>

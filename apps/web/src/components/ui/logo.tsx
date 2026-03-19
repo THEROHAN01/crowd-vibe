@@ -1,5 +1,3 @@
-"use client";
-
 interface LogoProps {
 	size?: "sm" | "default" | "lg";
 	showMark?: boolean;
@@ -22,7 +20,7 @@ function LogoMark({ className }: { className?: string }) {
 }
 
 const sizeMap = {
-	sm: { text: "text-lg", mark: "h-5 w-5" },
+	sm: { text: "text-lg", mark: "h-6 w-6" },
 	default: { text: "text-2xl", mark: "h-6 w-6" },
 	lg: { text: "text-5xl", mark: "h-10 w-10" },
 };
