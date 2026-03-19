@@ -85,6 +85,7 @@ export default function SessionDashboard({
 			nowPlaying.refetch();
 			queue.refetch();
 		},
+		onListenerChanged: () => stats.refetch(),
 	});
 
 	const handleSongEnded = useCallback(() => {

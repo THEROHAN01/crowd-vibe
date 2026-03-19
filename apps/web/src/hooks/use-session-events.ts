@@ -22,6 +22,7 @@ interface SessionEventHandlers {
 	onVoteChanged?: (songId: string, score: number) => void;
 	onSongAdded?: (song: QueuedSong) => void;
 	onSongRemoved?: (songId: string) => void;
+	onListenerChanged?: (count: number) => void;
 	onSessionEnded?: () => void;
 	onReconnect?: () => void;
 }
@@ -75,6 +76,15 @@ export function useSessionEvents(
 			if (data && typeof data === "object" && "songId" in data) {
 				handlersRef.current.onSongRemoved?.(
 					(data as { songId: string }).songId,
+				);
+			}
+		});
+
+		eventSource.addEventListener("listener_changed", (e) => {
+			const data = safeParse(e.data);
+			if (data && typeof data === "object" && "count" in data) {
+				handlersRef.current.onListenerChanged?.(
+					(data as { count: number }).count,
 				);
 			}
 		});

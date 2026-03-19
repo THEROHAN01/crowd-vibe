@@ -18,4 +18,5 @@ export type SSEEvent =
 	| { type: "vote_changed"; data: { songId: string; score: number } }
 	| { type: "song_added"; data: { song: QueuedSong } }
 	| { type: "song_removed"; data: { songId: string } }
+	| { type: "listener_changed"; data: { count: number } }
 	| { type: "session_ended"; data: Record<string, never> };

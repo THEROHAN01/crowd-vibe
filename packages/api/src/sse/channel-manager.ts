@@ -25,6 +25,7 @@ class SSEChannelManager {
 			return false; // reject — too many subscribers
 		}
 		channel.add(writer);
+		this.broadcastListenerCount(sessionId);
 		return true;
 	}
 
@@ -34,6 +35,8 @@ class SSEChannelManager {
 			channel.delete(writer);
 			if (channel.size === 0) {
 				this.channels.delete(sessionId);
+			} else {
+				this.broadcastListenerCount(sessionId);
 			}
 		}
 	}
@@ -71,6 +74,13 @@ class SSEChannelManager {
 			}
 		}
 		this.channels.clear();
+	}
+
+	private broadcastListenerCount(sessionId: string): void {
+		this.broadcast(sessionId, {
+			type: "listener_changed",
+			data: { count: this.getListenerCount(sessionId) },
+		});
 	}
 
 	private sweep() {
