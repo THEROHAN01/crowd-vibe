@@ -92,7 +92,13 @@ export default function SessionDashboard({
 			nowPlaying.refetch();
 			queue.refetch();
 		},
-		onListenerChanged: () => stats.refetch(),
+		onListenerChanged: (count) => {
+			queryClient.setQueryData(
+				trpc.session.stats.queryOptions({ sessionId }).queryKey,
+				(old: typeof stats.data) =>
+					old ? { ...old, listenerCount: count } : old,
+			);
+		},
 	});
 
 	const handleSongEnded = useCallback(() => {

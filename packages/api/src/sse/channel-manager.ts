@@ -9,6 +9,7 @@ const MAX_SUBSCRIBERS_PER_SESSION = 100;
 
 class SSEChannelManager {
 	private channels = new Map<string, Set<SSEWriter>>();
+	private listenerDebounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 	constructor() {
 		// Sweep empty channels every 60 seconds
@@ -25,7 +26,7 @@ class SSEChannelManager {
 			return false; // reject — too many subscribers
 		}
 		channel.add(writer);
-		this.broadcastListenerCount(sessionId);
+		this.scheduleBroadcastListenerCount(sessionId);
 		return true;
 	}
 
@@ -36,7 +37,7 @@ class SSEChannelManager {
 			if (channel.size === 0) {
 				this.channels.delete(sessionId);
 			} else {
-				this.broadcastListenerCount(sessionId);
+				this.scheduleBroadcastListenerCount(sessionId);
 			}
 		}
 	}
@@ -74,13 +75,29 @@ class SSEChannelManager {
 			}
 		}
 		this.channels.clear();
+		for (const timer of this.listenerDebounceTimers.values()) {
+			clearTimeout(timer);
+		}
+		this.listenerDebounceTimers.clear();
 	}
 
-	private broadcastListenerCount(sessionId: string): void {
-		this.broadcast(sessionId, {
-			type: "listener_changed",
-			data: { count: this.getListenerCount(sessionId) },
-		});
+	/** Debounce listener count broadcasts to collapse rapid connect/disconnect bursts */
+	private scheduleBroadcastListenerCount(sessionId: string): void {
+		const existing = this.listenerDebounceTimers.get(sessionId);
+		if (existing) clearTimeout(existing);
+
+		const timer = setTimeout(() => {
+			this.listenerDebounceTimers.delete(sessionId);
+			const count = this.getListenerCount(sessionId);
+			if (count > 0) {
+				this.broadcast(sessionId, {
+					type: "listener_changed",
+					data: { count },
+				});
+			}
+		}, 500);
+
+		this.listenerDebounceTimers.set(sessionId, timer);
 	}
 
 	private sweep() {
