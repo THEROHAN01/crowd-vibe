@@ -40,7 +40,7 @@ export default function QueueManager({
 			{songs.map((song, i) => (
 				<div
 					key={song.id}
-					className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
+					className="flex items-center gap-3 overflow-hidden rounded-lg border border-border bg-card p-3"
 				>
 					<span className="w-6 text-muted-foreground text-sm">{i + 1}</span>
 					{song.thumbnailUrl && (
@@ -49,7 +49,7 @@ export default function QueueManager({
 							alt=""
 							width={40}
 							height={40}
-							className="h-10 w-10 rounded object-cover"
+							className="h-10 w-10 shrink-0 rounded object-cover"
 						/>
 					)}
 					<div className="min-w-0 flex-1">

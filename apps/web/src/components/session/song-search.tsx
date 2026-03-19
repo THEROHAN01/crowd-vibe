@@ -90,7 +90,7 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 					{searchResults.data?.tracks.map((track) => (
 						<div
 							key={track.providerId}
-							className="flex items-center gap-3 border-b py-3 last:border-0"
+							className="flex items-center gap-3 overflow-hidden border-b py-3 last:border-0"
 						>
 							{track.thumbnailUrl && (
 								<Image
@@ -98,7 +98,7 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 									alt=""
 									width={48}
 									height={48}
-									className="h-12 w-12 rounded object-cover"
+									className="h-12 w-12 shrink-0 rounded object-cover"
 								/>
 							)}
 							<div className="min-w-0 flex-1">

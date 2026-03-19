@@ -202,7 +202,7 @@ export default function SessionDashboard({
 				{searchResults.data?.tracks.map((track) => (
 					<div
 						key={track.providerId}
-						className="flex items-center gap-3 border-b py-2 last:border-0"
+						className="flex items-center gap-3 overflow-hidden border-b py-2 last:border-0"
 					>
 						{track.thumbnailUrl && (
 							<Image
@@ -210,7 +210,7 @@ export default function SessionDashboard({
 								alt={track.title}
 								width={40}
 								height={40}
-								className="h-10 w-10 rounded"
+								className="h-10 w-10 shrink-0 rounded"
 							/>
 						)}
 						<div className="min-w-0 flex-1">
