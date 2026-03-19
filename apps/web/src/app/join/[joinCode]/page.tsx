@@ -2,6 +2,7 @@
 
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
+import { Label } from "@crowd-vibe/ui/components/label";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -65,9 +66,7 @@ export default function JoinPage() {
 					)}
 				</div>
 
-				<label className="sr-only" htmlFor="guest-name">
-					Your name
-				</label>
+				<Label htmlFor="guest-name">Display name <span className="text-muted-foreground font-normal">(optional)</span></Label>
 				<Input
 					id="guest-name"
 					placeholder="Your name (optional)"

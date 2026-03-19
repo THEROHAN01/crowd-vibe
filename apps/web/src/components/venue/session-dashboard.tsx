@@ -2,6 +2,7 @@
 
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
+import Image from "next/image";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Music, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -196,9 +197,11 @@ export default function SessionDashboard({
 						className="flex items-center gap-3 border-b py-2 last:border-0"
 					>
 						{track.thumbnailUrl && (
-							<img
+							<Image
 								src={track.thumbnailUrl}
 								alt={track.title}
+								width={40}
+								height={40}
 								className="h-10 w-10 rounded"
 							/>
 						)}

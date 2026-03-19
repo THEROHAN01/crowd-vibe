@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@crowd-vibe/ui/components/button";
 import { useMutation } from "@tanstack/react-query";
 import { X } from "lucide-react";
@@ -43,9 +44,11 @@ export default function QueueManager({
 				>
 					<span className="w-6 text-muted-foreground text-sm">{i + 1}</span>
 					{song.thumbnailUrl && (
-						<img
+						<Image
 							src={song.thumbnailUrl}
 							alt=""
+							width={40}
+							height={40}
 							className="h-10 w-10 rounded object-cover"
 						/>
 					)}

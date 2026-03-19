@@ -9,6 +9,7 @@ import {
 } from "@crowd-vibe/ui/components/sheet";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { queryClient, trpc } from "@/utils/trpc";
@@ -92,9 +93,11 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 							className="flex items-center gap-3 border-b py-3 last:border-0"
 						>
 							{track.thumbnailUrl && (
-								<img
+								<Image
 									src={track.thumbnailUrl}
 									alt=""
+									width={48}
+									height={48}
 									className="h-12 w-12 rounded object-cover"
 								/>
 							)}

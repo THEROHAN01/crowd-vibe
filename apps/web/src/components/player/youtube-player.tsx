@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback } from "react";
-import YouTube from "react-youtube";
+import dynamic from "next/dynamic";
+
+const YouTube = dynamic(() => import("react-youtube").then(mod => mod.default), {
+	ssr: false,
+	loading: () => <div className="aspect-video w-full rounded-lg bg-background animate-pulse" />,
+});
 
 interface YouTubePlayerProps {
 	videoId: string;

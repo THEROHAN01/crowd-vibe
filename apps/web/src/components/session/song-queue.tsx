@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ListMusic } from "lucide-react";
 import VoteButton from "./vote-button";
 
@@ -47,9 +48,11 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
 						className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-muted/50"
 					>
 						{song.thumbnailUrl && (
-							<img
+							<Image
 								src={song.thumbnailUrl}
 								alt=""
+								width={48}
+								height={48}
 								className="h-12 w-12 rounded-md object-cover"
 							/>
 						)}

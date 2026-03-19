@@ -1,3 +1,4 @@
+import Image from "next/image";
 import EqualizerBars from "@/components/ui/equalizer-bars";
 
 interface NowPlayingProps {
@@ -33,9 +34,11 @@ export default function NowPlaying({ song }: NowPlayingProps) {
 			</p>
 			<div className="flex items-center gap-4">
 				{song.thumbnailUrl && (
-					<img
+					<Image
 						src={song.thumbnailUrl}
 						alt={song.title}
+						width={80}
+						height={80}
 						className="h-20 w-20 rounded-xl border-2 border-primary/30 object-cover"
 					/>
 				)}
