@@ -82,6 +82,7 @@ export const venueRouter = router({
 	listMine: protectedProcedure.query(async ({ ctx }) => {
 		return prisma.venue.findMany({
 			where: { ownerId: ctx.user.id },
+			take: 10,
 			include: {
 				sessions: {
 					where: { isActive: true },

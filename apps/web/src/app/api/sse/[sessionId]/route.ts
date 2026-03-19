@@ -58,6 +58,11 @@ export async function GET(
 		return new Response("Unauthorized", { status: 401 });
 	}
 
+	// Check subscriber limit before creating stream
+	if (channelManager.getListenerCount(sessionId) >= 100) {
+		return new Response("Session is full. Try again later.", { status: 429 });
+	}
+
 	// Create SSE stream
 	const encoder = new TextEncoder();
 	const stream = new ReadableStream({
@@ -79,7 +84,11 @@ export async function GET(
 				},
 			};
 
-			channelManager.subscribe(sessionId, writer);
+			const accepted = channelManager.subscribe(sessionId, writer);
+			if (!accepted) {
+				controller.close();
+				return;
+			}
 
 			// Send initial heartbeat
 			writer.write(": connected\n\n");

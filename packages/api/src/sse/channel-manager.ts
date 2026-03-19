@@ -5,14 +5,27 @@ type SSEWriter = {
 	close: () => void;
 };
 
+const MAX_SUBSCRIBERS_PER_SESSION = 100;
+
 class SSEChannelManager {
 	private channels = new Map<string, Set<SSEWriter>>();
 
-	subscribe(sessionId: string, writer: SSEWriter): void {
+	constructor() {
+		// Sweep empty channels every 60 seconds
+		// .unref() prevents this timer from keeping the Node.js process alive
+		setInterval(() => this.sweep(), 60_000).unref();
+	}
+
+	subscribe(sessionId: string, writer: SSEWriter): boolean {
 		if (!this.channels.has(sessionId)) {
 			this.channels.set(sessionId, new Set());
 		}
-		this.channels.get(sessionId)!.add(writer);
+		const channel = this.channels.get(sessionId)!;
+		if (channel.size >= MAX_SUBSCRIBERS_PER_SESSION) {
+			return false; // reject — too many subscribers
+		}
+		channel.add(writer);
+		return true;
 	}
 
 	unsubscribe(sessionId: string, writer: SSEWriter): void {
@@ -29,12 +42,17 @@ class SSEChannelManager {
 		const channel = this.channels.get(sessionId);
 		if (!channel) return;
 		const payload = `event: ${event.type}\ndata: ${JSON.stringify(event.data)}\n\n`;
+		const failed: SSEWriter[] = [];
 		for (const writer of channel) {
 			try {
 				writer.write(payload);
 			} catch {
-				channel.delete(writer);
+				failed.push(writer);
 			}
+		}
+		// Clean up failed writers
+		for (const writer of failed) {
+			channel.delete(writer);
 		}
 	}
 
@@ -53,6 +71,14 @@ class SSEChannelManager {
 			}
 		}
 		this.channels.clear();
+	}
+
+	private sweep() {
+		for (const [sessionId, channel] of this.channels) {
+			if (channel.size === 0) {
+				this.channels.delete(sessionId);
+			}
+		}
 	}
 }
 

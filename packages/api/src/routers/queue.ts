@@ -25,6 +25,7 @@ export const queueRouter = router({
 			return prisma.song.findMany({
 				where: { sessionId: input.sessionId, status: "queued" },
 				orderBy: [{ score: "desc" }, { addedAt: "asc" }],
+				take: 50,
 				select: {
 					id: true,
 					providerId: true,

@@ -30,8 +30,7 @@ model VenueSession {
   songs         Song[]
   guests        GuestUser[]
 
-  @@index([venueId])
-  @@index([isActive])
+  @@index([venueId, isActive])
   @@map("venue_session")
 }
 
@@ -71,6 +70,8 @@ model Song {
   votes         Vote[]
 
   @@index([sessionId, status, score])
+  @@index([sessionId, providerId, status])
+  @@index([sessionId, suggestedById])
   @@map("song")
 }
 
@@ -84,5 +85,6 @@ model Vote {
   createdAt DateTime  @default(now())
 
   @@unique([songId, guestId])
+  @@index([guestId])
   @@map("vote")
 }
