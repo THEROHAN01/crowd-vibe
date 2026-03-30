@@ -28,7 +28,9 @@ const sizeMap = {
 export default function Logo({ size = "default", showMark = true }: LogoProps) {
 	const s = sizeMap[size];
 	return (
-		<span className={`inline-flex items-center gap-2 font-bold font-heading ${s.text} tracking-tight`}>
+		<span
+			className={`inline-flex items-center gap-2 font-bold font-heading ${s.text} tracking-tight`}
+		>
 			{showMark && <LogoMark className={`${s.mark} text-primary`} />}
 			<span>
 				<span className="text-foreground">Crowd</span>

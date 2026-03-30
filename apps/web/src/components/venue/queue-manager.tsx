@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { Button } from "@crowd-vibe/ui/components/button";
 import { useMutation } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import Image from "next/image";
 import { queryClient, trpc } from "@/utils/trpc";
 
 interface Song {

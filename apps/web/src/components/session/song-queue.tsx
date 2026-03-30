@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ListMusic } from "lucide-react";
+import Image from "next/image";
 import VoteButton from "./vote-button";
 
 interface Song {

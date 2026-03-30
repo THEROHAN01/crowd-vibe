@@ -66,7 +66,10 @@ export default function JoinPage() {
 					)}
 				</div>
 
-				<Label htmlFor="guest-name">Display name <span className="text-muted-foreground font-normal">(optional)</span></Label>
+				<Label htmlFor="guest-name">
+					Display name{" "}
+					<span className="font-normal text-muted-foreground">(optional)</span>
+				</Label>
 				<Input
 					id="guest-name"
 					placeholder="Your name (optional)"

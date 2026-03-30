@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
 import { auth } from "@crowd-vibe/auth";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Dashboard from "./dashboard";
 
 export const metadata: Metadata = {
-  title: "Dashboard — CrowdVibe",
+	title: "Dashboard — CrowdVibe",
 };
 
 export default async function DashboardPage() {

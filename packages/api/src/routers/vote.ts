@@ -20,7 +20,10 @@ export const voteRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const { allowed } = voteRateLimiter.check(ctx.guestId);
 			if (!allowed) {
-				throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Slow down! Too many votes." });
+				throw new TRPCError({
+					code: "TOO_MANY_REQUESTS",
+					message: "Slow down! Too many votes.",
+				});
 			}
 
 			// Verify song belongs to guest's session

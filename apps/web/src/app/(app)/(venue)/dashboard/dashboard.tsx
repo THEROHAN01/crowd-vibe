@@ -27,7 +27,9 @@ export default function Dashboard({
 	if (!venue) {
 		return (
 			<div className="container mx-auto max-w-md px-4 py-8">
-				<h1 className="mb-6 font-bold font-heading text-2xl">Create Your Venue</h1>
+				<h1 className="mb-6 font-bold font-heading text-2xl">
+					Create Your Venue
+				</h1>
 				<CreateVenueForm onCreated={() => venues.refetch()} />
 			</div>
 		);

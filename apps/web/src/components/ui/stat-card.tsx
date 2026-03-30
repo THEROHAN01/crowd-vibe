@@ -8,7 +8,12 @@ interface StatCardProps {
 	live?: boolean;
 }
 
-export default function StatCard({ icon: Icon, value, label, live = false }: StatCardProps) {
+export default function StatCard({
+	icon: Icon,
+	value,
+	label,
+	live = false,
+}: StatCardProps) {
 	return (
 		<div
 			className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"

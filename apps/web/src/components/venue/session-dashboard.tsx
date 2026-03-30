@@ -2,9 +2,9 @@
 
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
-import Image from "next/image";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Music, Users } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import YouTubePlayer from "@/components/player/youtube-player";
@@ -144,53 +144,55 @@ export default function SessionDashboard({
 
 			{/* Now Playing + QR — side by side on desktop */}
 			<div className="grid gap-6 lg:grid-cols-[1fr_auto]">
-			<div className="rounded-lg border border-border bg-card p-4">
-				<h2 className="mb-3 font-heading font-semibold">Now Playing</h2>
-				{nowPlaying.data ? (
-					<div className="grid gap-3">
-						<div className="overflow-hidden rounded-lg border border-border bg-card">
-							<YouTubePlayer
-								videoId={nowPlaying.data.providerId}
-								onEnded={handleSongEnded}
-							/>
-						</div>
-						<div className="flex items-center justify-between gap-2">
-							<div className="min-w-0">
-								<p className="truncate font-medium">{nowPlaying.data.title}</p>
-								{nowPlaying.data.artist && (
-									<p className="truncate text-muted-foreground text-sm">
-										{nowPlaying.data.artist}
+				<div className="rounded-lg border border-border bg-card p-4">
+					<h2 className="mb-3 font-heading font-semibold">Now Playing</h2>
+					{nowPlaying.data ? (
+						<div className="grid gap-3">
+							<div className="overflow-hidden rounded-lg border border-border bg-card">
+								<YouTubePlayer
+									videoId={nowPlaying.data.providerId}
+									onEnded={handleSongEnded}
+								/>
+							</div>
+							<div className="flex items-center justify-between gap-2">
+								<div className="min-w-0">
+									<p className="truncate font-medium">
+										{nowPlaying.data.title}
 									</p>
-								)}
-							</div>
-							<div className="flex items-center gap-2">
-								<span className="font-bold text-sm">
-									Score: {nowPlaying.data.score}
-								</span>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => skipSong.mutate({ sessionId })}
-								>
-									Skip
-								</Button>
+									{nowPlaying.data.artist && (
+										<p className="truncate text-muted-foreground text-sm">
+											{nowPlaying.data.artist}
+										</p>
+									)}
+								</div>
+								<div className="flex items-center gap-2">
+									<span className="font-bold text-sm">
+										Score: {nowPlaying.data.score}
+									</span>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => skipSong.mutate({ sessionId })}
+									>
+										Skip
+									</Button>
+								</div>
 							</div>
 						</div>
-					</div>
-				) : (
-					<div className="py-8 text-center">
-						<p className="mb-2 text-muted-foreground">No song playing</p>
-						{(queue.data?.length ?? 0) > 0 && (
-							<Button onClick={() => nextSong.mutate({ sessionId })}>
-								Play Next
-							</Button>
-						)}
-					</div>
-				)}
-			</div>
+					) : (
+						<div className="py-8 text-center">
+							<p className="mb-2 text-muted-foreground">No song playing</p>
+							{(queue.data?.length ?? 0) > 0 && (
+								<Button onClick={() => nextSong.mutate({ sessionId })}>
+									Play Next
+								</Button>
+							)}
+						</div>
+					)}
+				</div>
 
-			{/* QR Code */}
-			<QRDisplay joinCode={joinCode} />
+				{/* QR Code */}
+				<QRDisplay joinCode={joinCode} />
 			</div>
 
 			{/* Owner Song Search + Add */}

@@ -65,7 +65,10 @@ export default function SignInForm({
 				variant="outline"
 				className="mb-4 w-full"
 				onClick={() =>
-					void authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" })
+					void authClient.signIn.social({
+						provider: "google",
+						callbackURL: "/dashboard",
+					})
 				}
 			>
 				<svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -91,7 +94,7 @@ export default function SignInForm({
 
 			<div className="relative mb-4">
 				<div className="absolute inset-0 flex items-center">
-					<div className="w-full border-t border-border" />
+					<div className="w-full border-border border-t" />
 				</div>
 				<div className="relative flex justify-center text-xs">
 					<span className="bg-background px-2 text-muted-foreground">or</span>

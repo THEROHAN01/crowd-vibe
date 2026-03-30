@@ -21,7 +21,8 @@ export function useGuest() {
 			setError(null);
 
 			try {
-				const FingerprintJS = (await import("@fingerprintjs/fingerprintjs")).default;
+				const FingerprintJS = (await import("@fingerprintjs/fingerprintjs"))
+					.default;
 				const fp = await FingerprintJS.load();
 				const result = await fp.get();
 				const fingerprint = result.visitorId;

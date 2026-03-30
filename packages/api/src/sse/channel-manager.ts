@@ -9,7 +9,10 @@ const MAX_SUBSCRIBERS_PER_SESSION = 100;
 
 class SSEChannelManager {
 	private channels = new Map<string, Set<SSEWriter>>();
-	private listenerDebounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
+	private listenerDebounceTimers = new Map<
+		string,
+		ReturnType<typeof setTimeout>
+	>();
 
 	constructor() {
 		// Sweep empty channels every 60 seconds
