@@ -87,6 +87,10 @@ export function ShaderAnimation({
 		onWindowResize();
 		window.addEventListener("resize", onWindowResize, false);
 
+		const reducedMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		).matches;
+
 		const animate = () => {
 			const animationId = requestAnimationFrame(animate);
 			uniforms.time.value += 0.05;
@@ -97,7 +101,14 @@ export function ShaderAnimation({
 		};
 
 		sceneRef.current = { camera, scene, renderer, uniforms, animationId: 0 };
-		animate();
+
+		if (reducedMotion) {
+			// Render a single static frame — no continuous loop
+			uniforms.time.value = 10;
+			renderer.render(scene, camera);
+		} else {
+			animate();
+		}
 
 		return () => {
 			window.removeEventListener("resize", onWindowResize);

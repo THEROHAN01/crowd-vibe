@@ -78,7 +78,7 @@ export default function Home() {
 					<div className="lp-fade-in mb-8" style={{ animationDelay: "250ms" }}>
 						<div className="inline-flex items-center gap-2.5 rounded-full border border-primary/25 bg-primary/8 px-4 py-2 font-semibold text-primary text-xs uppercase tracking-widest backdrop-blur-sm">
 							<span className="relative flex h-2 w-2">
-								<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-70 motion-safe:animate-ping" />
 								<span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
 							</span>
 							Crowd-controlled music · Live now
@@ -88,19 +88,19 @@ export default function Home() {
 					{/* Headline */}
 					<h1 className="select-none font-black font-heading text-foreground leading-[0.88] tracking-tighter">
 						<span
-							className="lp-fade-up block text-[clamp(2.6rem,14vw,13rem)]"
+							className="lp-fade-up block text-[clamp(2.4rem,7vw,5rem)]"
 							style={{ animationDelay: "450ms" }}
 						>
 							The Crowd
 						</span>
 						<span
-							className="lp-fade-up block text-[clamp(2.6rem,14vw,13rem)]"
+							className="lp-fade-up block text-[clamp(2.4rem,7vw,5rem)]"
 							style={{ animationDelay: "600ms" }}
 						>
 							Controls
 						</span>
 						<span
-							className="lp-fade-up block text-[clamp(2.6rem,14vw,13rem)] text-primary"
+							className="lp-fade-up block text-[clamp(2.4rem,7vw,5rem)] text-primary"
 							style={{ animationDelay: "750ms" }}
 						>
 							The Music
@@ -130,7 +130,7 @@ export default function Home() {
 								<ArrowRight className="ml-2 h-4 w-4" />
 							</Button>
 						</Link>
-						<a href="#how-it-works">
+						<a href="#how-it-works" className="cursor-pointer">
 							<Button
 								size="lg"
 								variant="outline"
@@ -143,7 +143,7 @@ export default function Home() {
 
 					{/* Mini trust strip */}
 					<div
-						className="lp-fade-up mt-14 hidden items-center gap-6 font-medium text-muted-foreground/50 text-xs uppercase tracking-widest sm:flex"
+						className="lp-fade-up mt-14 hidden items-center gap-6 font-medium text-muted-foreground/70 text-xs uppercase tracking-widest sm:flex"
 						style={{ animationDelay: "1300ms" }}
 					>
 						<span>50K+ Votes</span>
