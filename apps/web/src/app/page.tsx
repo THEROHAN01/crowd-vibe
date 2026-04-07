@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import Logo from "@/components/ui/logo";
 import { ShaderAnimation } from "@/components/ui/shader-animation";
+import { LandingFooter } from "@/components/ui/landing-footer";
 
 export default function Home() {
 	return (
@@ -387,29 +388,7 @@ export default function Home() {
 			{/* ══════════════════════════════════════════════
 			    FOOTER
 			══════════════════════════════════════════════ */}
-			<footer className="border-border border-t bg-background px-6 py-8">
-				<div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 md:flex-row">
-					<Logo size="sm" />
-					<p className="text-muted-foreground text-xs">
-						© 2025 CrowdVibe. Made with <span className="text-primary">♥</span>{" "}
-						by Rohan Salunkhe
-					</p>
-					<div className="flex gap-6 text-muted-foreground/60 text-xs">
-						<Link
-							href="/login"
-							className="transition-colors hover:text-foreground"
-						>
-							Sign in
-						</Link>
-						<Link
-							href="/login"
-							className="transition-colors hover:text-foreground"
-						>
-							Get started
-						</Link>
-					</div>
-				</div>
-			</footer>
+			<LandingFooter />
 		</div>
 	);
 }

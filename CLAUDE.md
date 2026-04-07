@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # CrowdVibe — Development Guide
 
 Crowd-controlled music platform for venues. Owners start sessions, customers scan QR codes to join, and the crowd votes in real-time to decide what plays next.
@@ -74,6 +78,12 @@ npm run test:db:reset          # Reset test DB schema
 
 Tests use `.env.test` via `dotenv-cli`. Integration tests require `npm run test:db:up` first.
 
+Run a single test file:
+```bash
+dotenv -e .env.test -- vitest run packages/api/src/lib/cookie.test.ts
+dotenv -e .env.test -- vitest run packages/api/src/routers/vote.integration.test.ts
+```
+
 ### Build
 ```bash
 npm run build                  # Build all workspaces
@@ -148,6 +158,39 @@ User → Venue → VenueSession → Song → Vote
 - YouTube search: filters `videoCategoryId=10` (music), parses ISO 8601 durations
 - Server-side search cache with TTL (quota protection)
 - Client-side React Query cache: 5min staleTime
+
+### App Router Route Groups
+
+```
+app/
+  page.tsx                        → Landing page (public)
+  (app)/
+    layout.tsx                    → Shared app shell (header, providers)
+    login/                        → Auth pages (sign-in, sign-up)
+    (venue)/
+      layout.tsx                  → Owner-only guard (redirects to /login)
+      dashboard/                  → Venue owner dashboard
+    session/[id]/                 → Guest session view (vote, search, queue)
+    join/[joinCode]/              → QR-code join redirect → resolves to session/[id]
+```
+
+### Queue State Machine
+
+`Song.status` transitions:
+```
+queued → playing → played
+                 → skipped
+```
+
+`advanceQueue(sessionId, musicProvider, markCurrentAs)` in `packages/api/src/lib/queue-helpers.ts` runs the transition atomically in a Prisma `$transaction`: marks the current song `played`/`skipped`, picks the next `queued` song by `score DESC, addedAt ASC`, marks it `playing`, and broadcasts `now_playing` via SSE. Call this from `queue.advance` and `vote.ts` auto-skip logic.
+
+### Per-Venue Settings
+
+`VenueSettings` schema in `packages/api/src/lib/settings.ts` — stored as JSONB on the `Venue` record and parsed with `parseVenueSettings(raw)`:
+- `maxSuggestionsPerGuest` (default 5)
+- `suggestionCooldownSec` (default 30)
+- `downvoteSkipThreshold` (default −3) — auto-skips a song when score hits this
+- `allowExplicitContent` (default true)
 
 ### Authentication
 
