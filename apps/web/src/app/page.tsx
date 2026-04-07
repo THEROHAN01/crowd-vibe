@@ -1,20 +1,18 @@
 import { Button } from "@crowd-vibe/ui/components/button";
 import {
 	ArrowRight,
-	BarChart3,
 	ChevronDown,
-	Globe,
-	Music2,
-	QrCode,
 	Sparkles,
-	ThumbsUp,
-	Users,
-	Zap,
 } from "lucide-react";
 import Link from "next/link";
 import Logo from "@/components/ui/logo";
 import { ShaderAnimation } from "@/components/ui/shader-animation";
 import { LandingFooter } from "@/components/ui/landing-footer";
+import { ActivityTicker } from "@/components/ui/activity-ticker";
+import { InteractiveDemo } from "@/components/ui/interactive-demo";
+import { PhoneMockupSection } from "@/components/ui/phone-mockup-section";
+import { Reveal } from "@/components/ui/reveal";
+import { FeaturesBento } from "@/components/ui/features-bento";
 
 export default function Home() {
 	return (
@@ -39,16 +37,16 @@ export default function Home() {
 
 					<div className="hidden items-center gap-8 font-medium text-sm md:flex">
 						<a
-							href="#how-it-works"
-							className="text-foreground/50 transition-colors duration-200 hover:text-foreground"
-						>
-							How it works
-						</a>
-						<a
 							href="#features"
 							className="text-foreground/50 transition-colors duration-200 hover:text-foreground"
 						>
 							Features
+						</a>
+						<a
+							href="#demo"
+							className="text-foreground/50 transition-colors duration-200 hover:text-foreground"
+						>
+							Try demo
 						</a>
 					</div>
 
@@ -89,22 +87,36 @@ export default function Home() {
 					{/* Headline */}
 					<h1 className="select-none font-black font-heading text-foreground leading-[0.88] tracking-tighter">
 						<span
-							className="lp-fade-up block text-[clamp(2.4rem,7vw,5rem)]"
+							className="lp-fade-up block text-[clamp(2.8rem,8.5vw,7rem)]"
 							style={{ animationDelay: "450ms" }}
 						>
-							The Crowd
+							The Crowd Controls
 						</span>
 						<span
-							className="lp-fade-up block text-[clamp(2.4rem,7vw,5rem)]"
-							style={{ animationDelay: "600ms" }}
+							className="lp-fade-up relative block text-[clamp(2.8rem,8.5vw,7rem)]"
+							style={{ animationDelay: "620ms" }}
 						>
-							Controls
-						</span>
-						<span
-							className="lp-fade-up block text-[clamp(2.4rem,7vw,5rem)] text-primary"
-							style={{ animationDelay: "750ms" }}
-						>
-							The Music
+							the{" "}
+							<span className="relative inline-block text-primary">
+								Music
+								<svg
+									viewBox="0 0 400 18"
+									preserveAspectRatio="none"
+									className="absolute -bottom-2 left-0 w-full overflow-visible"
+									aria-hidden="true"
+									style={{ height: 16 }}
+								>
+									<path
+										d="M0 9 C66 1, 133 17, 200 9 C266 1, 333 17, 400 9"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="4"
+										strokeLinecap="round"
+										className="animate-wave-draw"
+										style={{ animationDelay: "1100ms" }}
+									/>
+								</svg>
+							</span>
 						</span>
 					</h1>
 
@@ -131,13 +143,13 @@ export default function Home() {
 								<ArrowRight className="ml-2 h-4 w-4" />
 							</Button>
 						</Link>
-						<a href="#how-it-works" className="cursor-pointer">
+						<a href="#demo" className="cursor-pointer">
 							<Button
 								size="lg"
 								variant="outline"
 								className="h-12 border-foreground/15 px-8 font-medium text-base backdrop-blur-sm hover:bg-foreground/5"
 							>
-								See how it works
+								Try the demo
 							</Button>
 						</a>
 					</div>
@@ -165,159 +177,24 @@ export default function Home() {
 			</section>
 
 			{/* ══════════════════════════════════════════════
-			    HOW IT WORKS
+			    LIVE ACTIVITY TICKER
 			══════════════════════════════════════════════ */}
-			<section id="how-it-works" className="bg-background px-6 py-20 md:py-32">
-				<div className="mx-auto max-w-5xl">
-					<div className="mb-12 text-center md:mb-20">
-						<p className="mb-4 font-semibold text-muted-foreground/60 text-xs uppercase tracking-[0.2em]">
-							Simple by design
-						</p>
-						<h2 className="font-black font-heading text-[clamp(2.2rem,5.5vw,4.5rem)] text-foreground leading-[0.9] tracking-tight">
-							How it works
-						</h2>
-					</div>
-
-					<div className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-3">
-						{[
-							{
-								step: "01",
-								icon: QrCode,
-								title: "Owner starts a session",
-								desc: "Create your venue, open a session, and post the QR code anywhere in your space.",
-							},
-							{
-								step: "02",
-								icon: ThumbsUp,
-								title: "Crowd scans & votes",
-								desc: "Guests scan to join instantly — no signup, no downloads. Vote up or down on the queue.",
-							},
-							{
-								step: "03",
-								icon: Music2,
-								title: "Best song plays next",
-								desc: "The algorithm surfaces what the crowd wants. Real-time. Democratic. Unstoppable.",
-							},
-						].map((item) => (
-							<div
-								key={item.step}
-								className="group flex flex-col gap-6 bg-background p-6 transition-colors duration-500 hover:bg-card md:p-10"
-							>
-								<div className="flex items-start justify-between">
-									<span className="select-none font-black font-heading text-7xl text-foreground/6 leading-none">
-										{item.step}
-									</span>
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-muted transition-all duration-300 group-hover:border-primary/30 group-hover:bg-primary/8">
-										<item.icon className="h-5 w-5 text-muted-foreground transition-colors duration-300 group-hover:text-primary" />
-									</div>
-								</div>
-								<div>
-									<h3 className="mb-3 font-bold font-heading text-foreground text-xl tracking-tight">
-										{item.title}
-									</h3>
-									<p className="text-muted-foreground text-sm leading-relaxed">
-										{item.desc}
-									</p>
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+			<ActivityTicker />
 
 			{/* ══════════════════════════════════════════════
-			    FEATURES
+			    INTERACTIVE DEMO
 			══════════════════════════════════════════════ */}
-			<section id="features" className="bg-card/50 px-6 py-20 md:py-32">
-				<div className="mx-auto max-w-5xl">
-					<div className="mb-12 text-center md:mb-20">
-						<p className="mb-4 font-semibold text-muted-foreground/60 text-xs uppercase tracking-[0.2em]">
-							Built for venues
-						</p>
-						<h2 className="font-black font-heading text-[clamp(2.2rem,5.5vw,4.5rem)] text-foreground leading-[0.9] tracking-tight">
-							Everything you need
-						</h2>
-					</div>
+			<InteractiveDemo />
 
-					<div className="grid gap-4 md:grid-cols-2">
-						{/* Hero feature card — double height on desktop */}
-						<div className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 transition-colors duration-500 hover:border-primary/25 md:row-span-2 md:p-10">
-							<div>
-								<div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted transition-all duration-300 group-hover:border-primary/30 group-hover:bg-primary/8">
-									<Zap className="h-5 w-5 text-primary" />
-								</div>
-								<h3 className="mb-4 font-bold font-heading text-2xl text-foreground tracking-tight">
-									Real-time voting
-								</h3>
-								<p className="text-muted-foreground leading-relaxed">
-									Every vote updates the queue instantly. No refresh needed.
-									Watch your song climb the ranks as the crowd rallies behind
-									it.
-								</p>
-							</div>
-							{/* Mini bar chart decoration */}
-							<div
-								className="mt-10 flex h-16 items-end gap-1.5"
-								aria-hidden="true"
-							>
-								{[40, 65, 45, 82, 55, 94, 70, 58, 88, 72].map((h) => (
-									<div
-										key={h}
-										className="flex-1 rounded-sm bg-gradient-to-t from-primary/25 to-primary/60 transition-all duration-700"
-										style={{ height: `${h}%` }}
-									/>
-								))}
-							</div>
-						</div>
+			{/* ══════════════════════════════════════════════
+			    FEATURES BENTO
+			══════════════════════════════════════════════ */}
+			<FeaturesBento />
 
-						{[
-							{
-								icon: Users,
-								iconClass: "text-accent",
-								hoverBorder: "hover:border-accent/25",
-								hoverBg: "group-hover:bg-accent/8 group-hover:border-accent/30",
-								title: "No app required",
-								desc: "Guests join by scanning a QR code. Nothing to install. Works on any smartphone.",
-							},
-							{
-								icon: Globe,
-								iconClass: "text-sky-400",
-								hoverBorder: "hover:border-sky-400/25",
-								hoverBg:
-									"group-hover:bg-sky-400/8 group-hover:border-sky-400/30",
-								title: "Any venue, anywhere",
-								desc: "Bars, restaurants, clubs, events. If you play music, CrowdVibe amplifies it.",
-							},
-							{
-								icon: BarChart3,
-								iconClass: "text-amber-400",
-								hoverBorder: "hover:border-amber-400/25",
-								hoverBg:
-									"group-hover:bg-amber-400/8 group-hover:border-amber-400/30",
-								title: "Session analytics",
-								desc: "See what your crowd loves. Song stats, peak engagement, and live listener counts.",
-							},
-						].map((item) => (
-							<div
-								key={item.title}
-								className={`group rounded-2xl border border-border bg-card p-8 ${item.hoverBorder} transition-all duration-500 hover:bg-card/80`}
-							>
-								<div
-									className={`mb-6 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted ${item.hoverBg} transition-all duration-300`}
-								>
-									<item.icon className={`h-4 w-4 ${item.iconClass}`} />
-								</div>
-								<h3 className="mb-2 font-bold font-heading text-foreground text-lg tracking-tight">
-									{item.title}
-								</h3>
-								<p className="text-muted-foreground text-sm leading-relaxed">
-									{item.desc}
-								</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+			{/* ══════════════════════════════════════════════
+			    PHONE MOCKUP
+			══════════════════════════════════════════════ */}
+			<PhoneMockupSection />
 
 			{/* ══════════════════════════════════════════════
 			    STATS
@@ -325,21 +202,22 @@ export default function Home() {
 			<section className="border-border border-y bg-background px-6 py-16 md:py-24">
 				<div className="mx-auto grid max-w-5xl grid-cols-1 sm:grid-cols-3">
 					{[
-						{ value: "50K+", label: "Votes cast" },
-						{ value: "200+", label: "Active venues" },
-						{ value: "<1s", label: "Update latency" },
+						{ value: "50K+", label: "Votes cast", delay: 0 },
+						{ value: "200+", label: "Active venues", delay: 120 },
+						{ value: "<1s", label: "Update latency", delay: 240 },
 					].map((stat, idx) => (
-						<div
-							key={stat.value}
-							className={`py-8 text-center ${idx < 2 ? "border-border border-b sm:border-r sm:border-b-0" : ""}`}
-						>
-							<div className="font-black font-heading text-[clamp(2rem,5.5vw,4.5rem)] text-primary leading-none tracking-tight">
-								{stat.value}
+						<Reveal key={stat.value} direction="scale" delay={stat.delay}>
+							<div
+								className={`py-8 text-center ${idx < 2 ? "border-border border-b sm:border-r sm:border-b-0" : ""}`}
+							>
+								<div className="font-black font-heading text-[clamp(2rem,5.5vw,4.5rem)] text-primary leading-none tracking-tight">
+									{stat.value}
+								</div>
+								<div className="mt-2 font-medium text-muted-foreground text-xs uppercase tracking-widest">
+									{stat.label}
+								</div>
 							</div>
-							<div className="mt-2 font-medium text-muted-foreground text-xs uppercase tracking-widest">
-								{stat.label}
-							</div>
-						</div>
+						</Reveal>
 					))}
 				</div>
 			</section>
@@ -357,7 +235,7 @@ export default function Home() {
 					}}
 				/>
 
-				<div className="relative mx-auto max-w-3xl text-center">
+				<Reveal className="relative mx-auto max-w-3xl text-center">
 					<div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-2 font-semibold text-primary text-xs uppercase tracking-widest">
 						<Sparkles className="h-3 w-3" />
 						Free to start
@@ -382,7 +260,7 @@ export default function Home() {
 							<ArrowRight className="ml-2 h-4 w-4" />
 						</Button>
 					</Link>
-				</div>
+				</Reveal>
 			</section>
 
 			{/* ══════════════════════════════════════════════

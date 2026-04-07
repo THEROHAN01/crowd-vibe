@@ -304,3 +304,174 @@
 		height: 8px;
 	}
 }
+
+/* ─── Activity ticker ─── */
+@keyframes marquee {
+	0% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(-50%);
+	}
+}
+.animate-marquee {
+	animation: marquee 40s linear infinite;
+}
+.animate-marquee:hover {
+	animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-marquee {
+		animation: none;
+	}
+}
+
+/* ─── Score pulse ─── */
+@keyframes score-pop {
+	0% { transform: scale(1); }
+	40% { transform: scale(1.35); }
+	100% { transform: scale(1); }
+}
+.animate-score-pop {
+	animation: score-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ─── Ambient blob drift ─── */
+@keyframes blob-drift-a {
+	0%, 100% { transform: translate(0%, 0%) scale(1); }
+	33% { transform: translate(6%, -10%) scale(1.07); }
+	66% { transform: translate(-5%, 7%) scale(0.94); }
+}
+@keyframes blob-drift-b {
+	0%, 100% { transform: translate(0%, 0%) scale(1); }
+	33% { transform: translate(-8%, 5%) scale(0.93); }
+	66% { transform: translate(6%, -9%) scale(1.06); }
+}
+.animate-blob-a {
+	animation: blob-drift-a 18s ease-in-out infinite;
+}
+.animate-blob-b {
+	animation: blob-drift-b 22s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-blob-a,
+	.animate-blob-b { animation: none; }
+}
+
+/* ─── Phone glow pulse ─── */
+@keyframes phone-glow-pulse {
+	0%, 100% { opacity: 0.45; transform: scale(1); }
+	50% { opacity: 0.85; transform: scale(1.04); }
+}
+.animate-phone-glow {
+	animation: phone-glow-pulse 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-phone-glow { animation: none; opacity: 0.6; }
+}
+
+/* ─── Floating badge ─── */
+@keyframes float-a {
+	0%, 100% { transform: translateY(0px) rotate(-1deg); }
+	50% { transform: translateY(-9px) rotate(1deg); }
+}
+@keyframes float-b {
+	0%, 100% { transform: translateY(0px) rotate(1deg); }
+	50% { transform: translateY(-7px) rotate(-1.5deg); }
+}
+@keyframes float-c {
+	0%, 100% { transform: translateY(0px) rotate(0.5deg); }
+	50% { transform: translateY(-11px) rotate(-0.5deg); }
+}
+.animate-float-a { animation: float-a 5s ease-in-out infinite; }
+.animate-float-b { animation: float-b 6.5s ease-in-out infinite; }
+.animate-float-c { animation: float-c 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+	.animate-float-a,
+	.animate-float-b,
+	.animate-float-c { animation: none; }
+}
+
+/* ─── Slow ping (bento rings) ─── */
+@keyframes ping-slow {
+	0% { transform: scale(1); opacity: 0.5; }
+	100% { transform: scale(1.9); opacity: 0; }
+}
+.animate-ping-slow {
+	animation: ping-slow 2.2s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-ping-slow { animation: none; opacity: 0; }
+}
+
+/* ─── Hero wavy underline ─── */
+@keyframes wave-draw {
+	from {
+		stroke-dashoffset: 520;
+		opacity: 0;
+	}
+	to {
+		stroke-dashoffset: 0;
+		opacity: 0.7;
+	}
+}
+.animate-wave-draw {
+	stroke-dasharray: 520;
+	stroke-dashoffset: 520;
+	opacity: 0;
+	animation: wave-draw 1.3s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+	.animate-wave-draw {
+		animation: none;
+		stroke-dashoffset: 0;
+		opacity: 0.7;
+	}
+}
+
+/* ─── Scroll-triggered reveals ─── */
+.reveal-up {
+	opacity: 0;
+	transform: translateY(48px);
+	transition:
+		opacity 0.75s cubic-bezier(0.2, 0, 0, 1),
+		transform 0.75s cubic-bezier(0.2, 0, 0, 1);
+}
+.reveal-left {
+	opacity: 0;
+	transform: translateX(-48px);
+	transition:
+		opacity 0.75s cubic-bezier(0.2, 0, 0, 1),
+		transform 0.75s cubic-bezier(0.2, 0, 0, 1);
+}
+.reveal-right {
+	opacity: 0;
+	transform: translateX(48px);
+	transition:
+		opacity 0.75s cubic-bezier(0.2, 0, 0, 1),
+		transform 0.75s cubic-bezier(0.2, 0, 0, 1);
+}
+.reveal-scale {
+	opacity: 0;
+	transform: scale(0.92);
+	transition:
+		opacity 0.75s cubic-bezier(0.2, 0, 0, 1),
+		transform 0.75s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.reveal-up.in-view,
+.reveal-left.in-view,
+.reveal-right.in-view,
+.reveal-scale.in-view {
+	opacity: 1;
+	transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.reveal-up,
+	.reveal-left,
+	.reveal-right,
+	.reveal-scale {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+}
