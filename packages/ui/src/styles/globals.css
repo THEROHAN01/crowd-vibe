@@ -360,11 +360,12 @@
 
 /* ─── Phone glow pulse ─── */
 @keyframes phone-glow-pulse {
-	0%, 100% { opacity: 0.45; transform: scale(1); }
-	50% { opacity: 0.85; transform: scale(1.04); }
+	0%, 100% { opacity: 0.45; }
+	50% { opacity: 0.85; }
 }
 .animate-phone-glow {
 	animation: phone-glow-pulse 4s ease-in-out infinite;
+	will-change: opacity;
 }
 @media (prefers-reduced-motion: reduce) {
 	.animate-phone-glow { animation: none; opacity: 0.6; }
