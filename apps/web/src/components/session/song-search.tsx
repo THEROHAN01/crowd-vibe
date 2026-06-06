@@ -99,6 +99,9 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 									width={48}
 									height={48}
 									className="h-12 w-12 shrink-0 rounded object-cover"
+									onError={(e) => {
+										e.currentTarget.style.display = "none";
+									}}
 								/>
 							)}
 							<div className="min-w-0 flex-1">
