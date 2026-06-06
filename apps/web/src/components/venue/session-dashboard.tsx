@@ -2,8 +2,9 @@
 
 import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
+import { Skeleton } from "@crowd-vibe/ui/components/skeleton";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Music, Users } from "lucide-react";
+import { Loader2, Music, Users } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -35,7 +36,6 @@ export default function SessionDashboard({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
-	// Debounce owner search by 300ms
 	useEffect(() => {
 		const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
 		return () => clearTimeout(timer);
@@ -83,7 +83,6 @@ export default function SessionDashboard({
 		}),
 	);
 
-	// SSE real-time updates
 	useSessionEvents(sessionId, {
 		onVoteChanged: () => queue.refetch(),
 		onSongAdded: () => queue.refetch(),
@@ -122,8 +121,13 @@ export default function SessionDashboard({
 					variant="destructive"
 					size="sm"
 					onClick={() => endSession.mutate({ sessionId })}
+					disabled={endSession.isPending}
 				>
-					End Session
+					{endSession.isPending ? (
+						<Loader2 className="h-4 w-4 animate-spin" />
+					) : (
+						"End Session"
+					)}
 				</Button>
 			</div>
 
@@ -142,11 +146,17 @@ export default function SessionDashboard({
 				/>
 			</div>
 
-			{/* Now Playing + QR — side by side on desktop */}
+			{/* Now Playing + QR */}
 			<div className="grid gap-6 lg:grid-cols-[1fr_auto]">
 				<div className="rounded-lg border border-border bg-card p-4">
 					<h2 className="mb-3 font-heading font-semibold">Now Playing</h2>
-					{nowPlaying.data ? (
+					{nowPlaying.isError ? (
+						<p className="py-4 text-center text-destructive text-sm">
+							Failed to load current song.
+						</p>
+					) : nowPlaying.isLoading ? (
+						<Skeleton className="h-40 w-full rounded-lg" />
+					) : nowPlaying.data ? (
 						<div className="grid gap-3">
 							<div className="overflow-hidden rounded-lg border border-border bg-card">
 								<YouTubePlayer
@@ -173,8 +183,13 @@ export default function SessionDashboard({
 										variant="outline"
 										size="sm"
 										onClick={() => skipSong.mutate({ sessionId })}
+										disabled={skipSong.isPending}
 									>
-										Skip
+										{skipSong.isPending ? (
+											<Loader2 className="h-3 w-3 animate-spin" />
+										) : (
+											"Skip"
+										)}
 									</Button>
 								</div>
 							</div>
@@ -183,7 +198,13 @@ export default function SessionDashboard({
 						<div className="py-8 text-center">
 							<p className="mb-2 text-muted-foreground">No song playing</p>
 							{(queue.data?.length ?? 0) > 0 && (
-								<Button onClick={() => nextSong.mutate({ sessionId })}>
+								<Button
+									onClick={() => nextSong.mutate({ sessionId })}
+									disabled={nextSong.isPending}
+								>
+									{nextSong.isPending ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : null}
 									Play Next
 								</Button>
 							)}
@@ -191,7 +212,6 @@ export default function SessionDashboard({
 					)}
 				</div>
 
-				{/* QR Code */}
 				<QRDisplay joinCode={joinCode} />
 			</div>
 
@@ -208,6 +228,28 @@ export default function SessionDashboard({
 					onChange={(e) => setSearchQuery(e.target.value)}
 					className="mb-3"
 				/>
+
+				{debouncedSearch.length > 0 && searchResults.isLoading && (
+					<div className="space-y-2">
+						{[1, 2, 3].map((i) => (
+							<Skeleton key={i} className="h-14 w-full rounded-lg" />
+						))}
+					</div>
+				)}
+				{searchResults.isError && (
+					<p className="py-3 text-center text-destructive text-sm">
+						Search failed. Check your connection and try again.
+					</p>
+				)}
+				{!searchResults.isLoading &&
+					!searchResults.isError &&
+					debouncedSearch.length > 0 &&
+					(searchResults.data?.tracks.length ?? 0) === 0 && (
+						<p className="py-3 text-center text-muted-foreground text-sm">
+							No results for &ldquo;{debouncedSearch}&rdquo;
+						</p>
+					)}
+
 				{searchResults.data?.tracks.map((track) => (
 					<div
 						key={track.providerId}
@@ -220,6 +262,9 @@ export default function SessionDashboard({
 								width={40}
 								height={40}
 								className="h-10 w-10 shrink-0 rounded"
+								onError={(e) => {
+									e.currentTarget.style.display = "none";
+								}}
 							/>
 						)}
 						<div className="min-w-0 flex-1">
@@ -231,11 +276,16 @@ export default function SessionDashboard({
 						<Button
 							size="sm"
 							variant="outline"
+							disabled={addSong.isPending}
 							onClick={() =>
 								addSong.mutate({ sessionId, providerId: track.providerId })
 							}
 						>
-							Add
+							{addSong.isPending ? (
+								<Loader2 className="h-3 w-3 animate-spin" />
+							) : (
+								"Add"
+							)}
 						</Button>
 					</div>
 				))}
@@ -244,7 +294,19 @@ export default function SessionDashboard({
 			{/* Queue */}
 			<div className="rounded-lg border border-border bg-card p-4">
 				<h2 className="mb-3 font-heading font-semibold">Queue</h2>
-				<QueueManager songs={queue.data ?? []} sessionId={sessionId} />
+				{queue.isError ? (
+					<p className="py-4 text-center text-destructive text-sm">
+						Failed to load queue. Refresh to retry.
+					</p>
+				) : queue.isLoading ? (
+					<div className="space-y-2">
+						{[1, 2, 3].map((i) => (
+							<Skeleton key={i} className="h-14 w-full rounded-lg" />
+						))}
+					</div>
+				) : (
+					<QueueManager songs={queue.data ?? []} sessionId={sessionId} />
+				)}
 			</div>
 		</div>
 	);
