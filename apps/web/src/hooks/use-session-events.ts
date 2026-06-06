@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface QueuedSong {
 	id: string;
@@ -25,6 +25,7 @@ interface SessionEventHandlers {
 	onListenerChanged?: (count: number) => void;
 	onSessionEnded?: () => void;
 	onReconnect?: () => void;
+	onDisconnect?: () => void;
 }
 
 function safeParse(raw: string): unknown | null {
@@ -38,14 +39,17 @@ function safeParse(raw: string): unknown | null {
 export function useSessionEvents(
 	sessionId: string | null,
 	handlers: SessionEventHandlers,
-) {
+): { connected: boolean } {
 	const handlersRef = useRef(handlers);
 	handlersRef.current = handlers;
+	const [connected, setConnected] = useState(true);
 
 	useEffect(() => {
 		if (!sessionId) return;
 
 		const eventSource = new EventSource(`/api/sse/${sessionId}`);
+
+		eventSource.onopen = () => setConnected(true);
 
 		eventSource.addEventListener("vote_changed", (e) => {
 			const data = safeParse(e.data);
@@ -102,11 +106,13 @@ export function useSessionEvents(
 			handlersRef.current.onSessionEnded?.();
 		});
 
-		// EventSource auto-reconnects on error. On reconnect, notify the caller
-		// so it can refetch full queue state to catch up on missed events.
 		eventSource.onerror = () => {
 			if (eventSource.readyState === EventSource.CONNECTING) {
+				setConnected(false);
 				handlersRef.current.onReconnect?.();
+			} else if (eventSource.readyState === EventSource.CLOSED) {
+				setConnected(false);
+				handlersRef.current.onDisconnect?.();
 			}
 		};
 
@@ -114,4 +120,6 @@ export function useSessionEvents(
 			eventSource.close();
 		};
 	}, [sessionId]);
+
+	return { connected };
 }
