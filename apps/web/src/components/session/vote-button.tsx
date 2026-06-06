@@ -2,23 +2,64 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { toast } from "sonner";
 import { queryClient, trpc } from "@/utils/trpc";
 
 interface VoteButtonProps {
 	songId: string;
+	sessionId: string;
 	direction: "up" | "down";
 	isActive: boolean;
+	myCurrentVote: number;
 }
 
 export default function VoteButton({
 	songId,
+	sessionId,
 	direction,
 	isActive,
+	myCurrentVote,
 }: VoteButtonProps) {
+	const queueQueryKey = trpc.queue.list.queryOptions({ sessionId }).queryKey;
+
 	const castVote = useMutation(
 		trpc.vote.cast.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries();
+			onMutate: async ({ value }) => {
+				await queryClient.cancelQueries({ queryKey: queueQueryKey });
+
+				const previousQueue = queryClient.getQueryData(queueQueryKey);
+
+				let delta = value;
+				if (myCurrentVote === value) {
+					// Same direction — toggle off
+					delta = -value;
+				} else if (myCurrentVote !== 0) {
+					// Opposite direction — switch
+					delta = value * 2;
+				}
+
+				queryClient.setQueryData(
+					queueQueryKey,
+					(old: Array<{ id: string; score: number }> | undefined) => {
+						if (!old) return old;
+						return old.map((song) =>
+							song.id === songId
+								? { ...song, score: song.score + delta }
+								: song,
+						);
+					},
+				);
+
+				return { previousQueue };
+			},
+			onError: (err, _, ctx) => {
+				if (ctx?.previousQueue !== undefined) {
+					queryClient.setQueryData(queueQueryKey, ctx.previousQueue);
+				}
+				toast.error(err.message);
+			},
+			onSettled: () => {
+				queryClient.invalidateQueries({ queryKey: queueQueryKey });
 			},
 		}),
 	);
@@ -31,6 +72,7 @@ export default function VoteButton({
 
 	return (
 		<button
+			type="button"
 			onClick={() =>
 				castVote.mutate({ songId, value: direction === "up" ? 1 : -1 })
 			}
