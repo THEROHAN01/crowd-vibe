@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Music } from "lucide-react";
+import { Music, WifiOff } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ErrorBoundary } from "@/components/error-boundary";
 import NowPlaying from "@/components/session/now-playing";
 import SongQueue from "@/components/session/song-queue";
 import SongSearch from "@/components/session/song-search";
@@ -20,7 +21,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 	);
 	const guestInfo = useQuery(trpc.guest.me.queryOptions());
 
-	useSessionEvents(sessionId, {
+	const { connected } = useSessionEvents(sessionId, {
 		onVoteChanged: () => queue.refetch(),
 		onSongAdded: () => queue.refetch(),
 		onSongRemoved: () => queue.refetch(),
@@ -30,14 +31,12 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 		},
 		onSessionEnded: () => setSessionEnded(true),
 		onReconnect: () => {
-			// Catch up on missed events after SSE reconnection
 			queue.refetch();
 			nowPlaying.refetch();
 			guestInfo.refetch();
 		},
 	});
 
-	// Extract guest's votes for highlighting
 	const myVotes = useMemo(() => {
 		const map = new Map<string, number>();
 		guestInfo.data?.votes?.forEach((v: { songId: string; value: number }) => {
@@ -65,6 +64,19 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 					</div>
 				</div>
 			)}
+
+			{/* Connection Lost Banner */}
+			{!connected && !sessionEnded && (
+				<div
+					role="status"
+					aria-live="polite"
+					className="flex items-center justify-center gap-2 bg-destructive/10 px-4 py-2 text-destructive text-sm"
+				>
+					<WifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+					Connection lost — reconnecting…
+				</div>
+			)}
+
 			{/* Content — inert when session ended to block keyboard/pointer interaction */}
 			{/* biome-ignore lint: inert is valid HTML but React types lag */}
 			<div
@@ -79,17 +91,25 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 				</div>
 
 				{/* Now Playing Hero */}
-				<div aria-live="polite">
-					<NowPlaying song={nowPlaying.data ?? null} />
-				</div>
+				<ErrorBoundary>
+					<div aria-live="polite">
+						<NowPlaying song={nowPlaying.data ?? null} />
+					</div>
+				</ErrorBoundary>
 
 				{/* Queue */}
-				<div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-					<h2 className="mb-2 font-semibold text-muted-foreground text-sm">
-						UP NEXT
-					</h2>
-					<SongQueue songs={queue.data ?? []} myVotes={myVotes} />
-				</div>
+				<ErrorBoundary>
+					<div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+						<h2 className="mb-2 font-semibold text-muted-foreground text-sm">
+							UP NEXT
+						</h2>
+						<SongQueue
+							songs={queue.data ?? []}
+							myVotes={myVotes}
+							sessionId={sessionId}
+						/>
+					</div>
+				</ErrorBoundary>
 
 				{/* Search & Add */}
 				<div className="border-t p-4">
