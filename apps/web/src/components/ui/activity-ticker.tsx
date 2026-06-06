@@ -60,10 +60,21 @@ const EVENTS = [
 ] as const;
 
 function EventIcon({ type }: { type: string }) {
-	if (type === "chart") return <Music2 className="h-3 w-3 shrink-0 text-primary" aria-hidden="true" />;
-	if (type === "users") return <Users className="h-3 w-3 shrink-0 text-accent" aria-hidden="true" />;
-	if (type === "thumbs") return <ThumbsUp className="h-3 w-3 shrink-0 text-accent" aria-hidden="true" />;
-	return <Music2 className="h-3 w-3 shrink-0 text-primary" aria-hidden="true" />;
+	if (type === "chart")
+		return (
+			<Music2 className="h-3 w-3 shrink-0 text-primary" aria-hidden="true" />
+		);
+	if (type === "users")
+		return (
+			<Users className="h-3 w-3 shrink-0 text-accent" aria-hidden="true" />
+		);
+	if (type === "thumbs")
+		return (
+			<ThumbsUp className="h-3 w-3 shrink-0 text-accent" aria-hidden="true" />
+		);
+	return (
+		<Music2 className="h-3 w-3 shrink-0 text-primary" aria-hidden="true" />
+	);
 }
 
 function TickerItem({ event }: { event: (typeof EVENTS)[number] }) {
@@ -77,7 +88,10 @@ function TickerItem({ event }: { event: (typeof EVENTS)[number] }) {
 
 			{/* Venue + city */}
 			<span className="flex items-center gap-1 text-foreground/70">
-				<MapPin className="h-2.5 w-2.5 shrink-0 text-muted-foreground/50" aria-hidden="true" />
+				<MapPin
+					className="h-2.5 w-2.5 shrink-0 text-muted-foreground/50"
+					aria-hidden="true"
+				/>
 				<span className="font-semibold text-foreground/90">{event.venue}</span>
 				<span className="text-muted-foreground/40">{event.city}</span>
 			</span>
@@ -93,7 +107,9 @@ function TickerItem({ event }: { event: (typeof EVENTS)[number] }) {
 			<span className="text-border/70">·</span>
 
 			{/* Count */}
-			<span className="font-semibold tabular-nums text-primary/80">{event.count}</span>
+			<span className="font-semibold text-primary/80 tabular-nums">
+				{event.count}
+			</span>
 		</span>
 	);
 }
@@ -117,7 +133,7 @@ export function ActivityTicker() {
 			/>
 
 			{/* Scrolling track */}
-			<div className="animate-marquee flex w-max font-medium text-xs tracking-wide">
+			<div className="flex w-max animate-marquee font-medium text-xs tracking-wide">
 				{doubled.map((event, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: intentional duplicate for marquee
 					<TickerItem key={i} event={event} />

@@ -1,18 +1,14 @@
 import { Button } from "@crowd-vibe/ui/components/button";
-import {
-	ArrowRight,
-	ChevronDown,
-	Sparkles,
-} from "lucide-react";
+import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import Link from "next/link";
-import Logo from "@/components/ui/logo";
-import { ShaderAnimation } from "@/components/ui/shader-animation";
-import { LandingFooter } from "@/components/ui/landing-footer";
 import { ActivityTicker } from "@/components/ui/activity-ticker";
+import { FeaturesBento } from "@/components/ui/features-bento";
 import { InteractiveDemo } from "@/components/ui/interactive-demo";
+import { LandingFooter } from "@/components/ui/landing-footer";
+import Logo from "@/components/ui/logo";
 import { PhoneMockupSection } from "@/components/ui/phone-mockup-section";
 import { Reveal } from "@/components/ui/reveal";
-import { FeaturesBento } from "@/components/ui/features-bento";
+import { ShaderAnimation } from "@/components/ui/shader-animation";
 
 export default function Home() {
 	return (

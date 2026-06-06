@@ -1,6 +1,6 @@
 "use client";
-import type React from "react";
 import { cn } from "@crowd-vibe/ui/lib/utils";
+import type React from "react";
 import { useInView } from "@/hooks/use-in-view";
 
 type Direction = "up" | "left" | "right" | "scale";

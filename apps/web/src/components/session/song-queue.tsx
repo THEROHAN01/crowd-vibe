@@ -17,7 +17,11 @@ interface SongQueueProps {
 	sessionId: string;
 }
 
-export default function SongQueue({ songs, myVotes, sessionId }: SongQueueProps) {
+export default function SongQueue({
+	songs,
+	myVotes,
+	sessionId,
+}: SongQueueProps) {
 	if (songs.length === 0) {
 		return (
 			<div className="py-12 text-center">

@@ -1,12 +1,12 @@
+import { cn } from "@crowd-vibe/ui/lib/utils";
 import {
-	ChevronUp,
 	ChevronDown,
+	ChevronUp,
 	QrCode,
-	Zap,
 	Smartphone,
 	Wifi,
+	Zap,
 } from "lucide-react";
-import { cn } from "@crowd-vibe/ui/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
 
 const QUEUE_SONGS = [
@@ -63,7 +63,7 @@ function StaticPhone() {
 			{/* Multi-layer glow */}
 			<div
 				aria-hidden="true"
-				className="animate-phone-glow pointer-events-none absolute -inset-8 rounded-[4rem]"
+				className="pointer-events-none absolute -inset-8 animate-phone-glow rounded-[4rem]"
 				style={{
 					background:
 						"radial-gradient(ellipse at 40% 55%, color-mix(in oklch, var(--primary) 22%, transparent) 0%, transparent 65%)",
@@ -71,7 +71,7 @@ function StaticPhone() {
 			/>
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute -bottom-4 -right-4 h-48 w-48 rounded-full opacity-15"
+				className="pointer-events-none absolute -right-4 -bottom-4 h-48 w-48 rounded-full opacity-15"
 				style={{
 					background:
 						"radial-gradient(circle, color-mix(in oklch, var(--accent) 70%, transparent), transparent)",
@@ -127,7 +127,7 @@ function StaticPhone() {
 						<p className="font-bold font-heading text-foreground text-sm tracking-tight">
 							The Rusty Anchor
 						</p>
-						<p className="text-muted-foreground/45 text-[10px]">
+						<p className="text-[10px] text-muted-foreground/45">
 							47 guests · voting now
 						</p>
 					</div>
@@ -139,7 +139,7 @@ function StaticPhone() {
 								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 motion-safe:animate-ping" />
 								<span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
 							</span>
-							<span className="font-semibold text-accent text-[9px] uppercase tracking-widest">
+							<span className="font-semibold text-[9px] text-accent uppercase tracking-widest">
 								Now playing
 							</span>
 						</div>
@@ -152,7 +152,7 @@ function StaticPhone() {
 								<p className="truncate font-semibold text-foreground text-xs leading-tight">
 									Shape of You
 								</p>
-								<p className="truncate text-muted-foreground/55 text-[10px]">
+								<p className="truncate text-[10px] text-muted-foreground/55">
 									Ed Sheeran
 								</p>
 							</div>
@@ -164,10 +164,10 @@ function StaticPhone() {
 
 					{/* Queue label */}
 					<div className="mb-2 flex items-center justify-between">
-						<span className="font-semibold text-muted-foreground/45 text-[9px] uppercase tracking-widest">
+						<span className="font-semibold text-[9px] text-muted-foreground/45 uppercase tracking-widest">
 							Queue
 						</span>
-						<span className="text-muted-foreground/30 text-[9px]">
+						<span className="text-[9px] text-muted-foreground/30">
 							{QUEUE_SONGS.length} songs
 						</span>
 					</div>
@@ -193,19 +193,17 @@ function StaticPhone() {
 									aria-hidden="true"
 								/>
 								<div className="min-w-0 flex-1">
-									<p className="truncate font-semibold text-foreground/90 text-[11px] leading-tight">
+									<p className="truncate font-semibold text-[11px] text-foreground/90 leading-tight">
 										{song.title}
 									</p>
-									<p className="truncate text-muted-foreground/45 text-[9px]">
+									<p className="truncate text-[9px] text-muted-foreground/45">
 										{song.artist}
 									</p>
 								</div>
 								<span
 									className={cn(
-										"w-7 text-center font-black tabular-nums text-[11px]",
-										song.score > 0
-											? "text-accent"
-											: "text-muted-foreground/35",
+										"w-7 text-center font-black text-[11px] tabular-nums",
+										song.score > 0 ? "text-accent" : "text-muted-foreground/35",
 									)}
 								>
 									+{song.score}
@@ -227,7 +225,7 @@ function StaticPhone() {
 				</div>
 
 				{/* Home indicator */}
-				<div className="flex justify-center pb-3 pt-2">
+				<div className="flex justify-center pt-2 pb-3">
 					<div className="h-1 w-24 rounded-full bg-white/15" />
 				</div>
 			</div>
@@ -241,7 +239,7 @@ export function PhoneMockupSection() {
 			{/* Subtle blob top-right */}
 			<div
 				aria-hidden="true"
-				className="animate-blob-a pointer-events-none absolute top-0 right-0 h-[400px] w-[400px] rounded-full opacity-[0.05]"
+				className="pointer-events-none absolute top-0 right-0 h-[400px] w-[400px] animate-blob-a rounded-full opacity-[0.05]"
 				style={{
 					background:
 						"radial-gradient(circle, color-mix(in oklch, var(--primary) 90%, transparent), transparent)",
@@ -260,8 +258,7 @@ export function PhoneMockupSection() {
 						</Reveal>
 						<Reveal delay={80}>
 							<h2 className="mb-6 font-black font-heading text-[clamp(2rem,5vw,3.8rem)] text-foreground leading-[0.9] tracking-tight">
-								What your{" "}
-								<span className="text-primary">guests</span> see
+								What your <span className="text-primary">guests</span> see
 							</h2>
 						</Reveal>
 						<Reveal delay={160}>

@@ -1,6 +1,6 @@
 "use client";
-import { BarChart3, Globe, Smartphone, Zap } from "lucide-react";
 import { cn } from "@crowd-vibe/ui/lib/utils";
+import { BarChart3, Globe, Smartphone, Zap } from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
 
 /* ─────────────────────────────────────────────────
@@ -90,7 +90,7 @@ function LineChartDecor({ inView }: { inView: boolean }) {
 					style={{
 						strokeDasharray: CHART_LEN,
 						strokeDashoffset: inView ? 0 : CHART_LEN,
-						transition: `stroke-dashoffset 1.4s cubic-bezier(0.2,0,0,1) 300ms`,
+						transition: "stroke-dashoffset 1.4s cubic-bezier(0.2,0,0,1) 300ms",
 					}}
 				/>
 				{/* End dot */}
@@ -103,7 +103,8 @@ function LineChartDecor({ inView }: { inView: boolean }) {
 						opacity: inView ? 1 : 0,
 						transform: inView ? "scale(1)" : "scale(0)",
 						transformOrigin: "192px 4px",
-						transition: "opacity 0.3s ease 1.5s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.5s",
+						transition:
+							"opacity 0.3s ease 1.5s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1) 1.5s",
 					}}
 				/>
 			</svg>
@@ -154,12 +155,12 @@ function VenueTagsDecor() {
 	const doubled = [...VENUE_TAGS, ...VENUE_TAGS];
 	return (
 		<div className="mt-auto overflow-hidden" aria-hidden="true">
-			<div className="animate-marquee flex w-max gap-2 py-1">
+			<div className="flex w-max animate-marquee gap-2 py-1">
 				{doubled.map((tag, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: stable decorative duplicate
 					<span
 						key={i}
-						className="shrink-0 rounded-full border border-border bg-muted px-3 py-1 font-medium text-muted-foreground/70 text-xs whitespace-nowrap"
+						className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-3 py-1 font-medium text-muted-foreground/70 text-xs"
 					>
 						{tag}
 					</span>
@@ -230,7 +231,8 @@ export function FeaturesBento() {
 					style={{
 						opacity: inView ? 1 : 0,
 						transform: inView ? "translateY(0)" : "translateY(32px)",
-						transition: "opacity 0.7s cubic-bezier(0.2,0,0,1), transform 0.7s cubic-bezier(0.2,0,0,1)",
+						transition:
+							"opacity 0.7s cubic-bezier(0.2,0,0,1), transform 0.7s cubic-bezier(0.2,0,0,1)",
 					}}
 				>
 					<p className="mb-4 font-semibold text-muted-foreground/60 text-xs uppercase tracking-[0.2em]">
@@ -245,7 +247,7 @@ export function FeaturesBento() {
 				<div className="grid auto-rows-auto gap-4 md:grid-cols-3">
 					{/* ── Card 1: Real-time voting — col-span-2 (wide left, row 1) ── */}
 					<BentoCard
-						className="md:col-span-2 min-h-[280px]"
+						className="min-h-[280px] md:col-span-2"
 						glowColor="var(--color-primary)"
 						inView={inView}
 						delay={100}
@@ -259,14 +261,14 @@ export function FeaturesBento() {
 							<h3 className="font-bold font-heading text-foreground text-xl tracking-tight">
 								Real-time voting
 							</h3>
-							<span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 font-semibold text-accent text-[10px] uppercase tracking-wider">
+							<span className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-2 py-0.5 font-semibold text-[10px] text-accent uppercase tracking-wider">
 								<span className="h-1 w-1 rounded-full bg-accent motion-safe:animate-ping" />
 								Live
 							</span>
 						</div>
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							Every vote updates the queue instantly. Watch songs climb the ranks
-							as your crowd rallies — sub-second, no refresh.
+							Every vote updates the queue instantly. Watch songs climb the
+							ranks as your crowd rallies — sub-second, no refresh.
 						</p>
 
 						<BarChartDecor inView={inView} />
@@ -320,7 +322,7 @@ export function FeaturesBento() {
 
 					{/* ── Card 4: Session analytics — col-span-2 (wide right, row 2) ── */}
 					<BentoCard
-						className="md:col-span-2 min-h-[240px]"
+						className="min-h-[240px] md:col-span-2"
 						glowColor="color-mix(in oklch, #fbbf24 80%, transparent)"
 						inView={inView}
 						delay={200}
@@ -334,8 +336,8 @@ export function FeaturesBento() {
 							Session analytics
 						</h3>
 						<p className="text-muted-foreground text-sm leading-relaxed">
-							See what your crowd loves. Live song stats, peak engagement windows,
-							and listener count — all in your dashboard.
+							See what your crowd loves. Live song stats, peak engagement
+							windows, and listener count — all in your dashboard.
 						</p>
 
 						<LineChartDecor inView={inView} />

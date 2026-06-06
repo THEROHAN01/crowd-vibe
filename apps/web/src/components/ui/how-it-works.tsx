@@ -1,5 +1,5 @@
 "use client";
-import type React from "react";
+import { cn } from "@crowd-vibe/ui/lib/utils";
 import {
 	Headphones,
 	Mic2,
@@ -9,7 +9,7 @@ import {
 	Radio,
 	ThumbsUp,
 } from "lucide-react";
-import { cn } from "@crowd-vibe/ui/lib/utils";
+import type React from "react";
 import { useInView } from "@/hooks/use-in-view";
 
 const STEPS = [
@@ -40,13 +40,45 @@ interface Floater {
 }
 
 const FLOATERS: Floater[] = [
-	{ Icon: Music, className: "absolute top-10 left-[7%] h-9 w-9 text-white/[0.08] animate-float-a" },
-	{ Icon: Music2, className: "absolute top-20 right-[9%] h-7 w-7 text-white/[0.10] animate-float-b" },
-	{ Icon: Radio, className: "absolute bottom-[38%] left-[3%] h-11 w-11 text-white/[0.07] animate-float-c" },
-	{ Icon: Headphones, className: "absolute top-[42%] right-[4%] h-14 w-14 text-white/[0.06] animate-float-a", style: { animationDelay: "800ms" } },
-	{ Icon: Mic2, className: "absolute bottom-[22%] right-[11%] h-8 w-8 text-white/[0.09] animate-float-b", style: { animationDelay: "300ms" } },
-	{ Icon: Music, className: "absolute bottom-[14%] left-[16%] h-5 w-5 text-white/[0.07] animate-float-c", style: { animationDelay: "1100ms" } },
-	{ Icon: Radio, className: "absolute top-[28%] left-[12%] h-6 w-6 text-white/[0.06] animate-float-b", style: { animationDelay: "600ms" } },
+	{
+		Icon: Music,
+		className:
+			"absolute top-10 left-[7%] h-9 w-9 text-white/[0.08] animate-float-a",
+	},
+	{
+		Icon: Music2,
+		className:
+			"absolute top-20 right-[9%] h-7 w-7 text-white/[0.10] animate-float-b",
+	},
+	{
+		Icon: Radio,
+		className:
+			"absolute bottom-[38%] left-[3%] h-11 w-11 text-white/[0.07] animate-float-c",
+	},
+	{
+		Icon: Headphones,
+		className:
+			"absolute top-[42%] right-[4%] h-14 w-14 text-white/[0.06] animate-float-a",
+		style: { animationDelay: "800ms" },
+	},
+	{
+		Icon: Mic2,
+		className:
+			"absolute bottom-[22%] right-[11%] h-8 w-8 text-white/[0.09] animate-float-b",
+		style: { animationDelay: "300ms" },
+	},
+	{
+		Icon: Music,
+		className:
+			"absolute bottom-[14%] left-[16%] h-5 w-5 text-white/[0.07] animate-float-c",
+		style: { animationDelay: "1100ms" },
+	},
+	{
+		Icon: Radio,
+		className:
+			"absolute top-[28%] left-[12%] h-6 w-6 text-white/[0.06] animate-float-b",
+		style: { animationDelay: "600ms" },
+	},
 ];
 
 function WavyUnderline({ inView }: { inView: boolean }) {
@@ -114,7 +146,12 @@ export function HowItWorks() {
 			{/* Floating music icons */}
 			{FLOATERS.map(({ Icon, className, style }, i) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: stable decorative list
-				<Icon key={i} className={cn("pointer-events-none select-none", className)} aria-hidden="true" style={style} />
+				<Icon
+					key={i}
+					className={cn("pointer-events-none select-none", className)}
+					aria-hidden="true"
+					style={style}
+				/>
 			))}
 
 			<div className="relative mx-auto max-w-5xl">
@@ -123,7 +160,7 @@ export function HowItWorks() {
 					<p
 						className={cn(
 							"mb-6 font-semibold text-white/45 text-xs uppercase tracking-[0.22em]",
-							inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
+							inView ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
 						)}
 						style={animate(0)}
 					>
@@ -131,14 +168,16 @@ export function HowItWorks() {
 					</p>
 
 					<h2
-						className="font-black font-heading leading-[0.88] tracking-tighter text-white"
+						className="font-black font-heading text-white leading-[0.88] tracking-tighter"
 						style={{ fontSize: "clamp(3rem, 8vw, 6.5rem)" }}
 					>
 						{/* Line 1 */}
 						<span
 							className={cn(
 								"block",
-								inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
+								inView
+									? "translate-y-0 opacity-100"
+									: "translate-y-10 opacity-0",
 							)}
 							style={animate(120)}
 						>
@@ -149,7 +188,9 @@ export function HowItWorks() {
 						<span
 							className={cn(
 								"block",
-								inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
+								inView
+									? "translate-y-0 opacity-100"
+									: "translate-y-10 opacity-0",
 							)}
 							style={animate(260)}
 						>
@@ -163,8 +204,8 @@ export function HowItWorks() {
 
 					<p
 						className={cn(
-							"mx-auto mt-8 max-w-sm text-white/55 text-lg leading-relaxed",
-							inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
+							"mx-auto mt-8 max-w-sm text-lg text-white/55 leading-relaxed",
+							inView ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
 						)}
 						style={animate(420)}
 					>
@@ -180,8 +221,8 @@ export function HowItWorks() {
 							className={cn(
 								"group rounded-2xl bg-white p-8 shadow-[0_4px_40px_rgba(0,0,0,0.25)] transition-shadow duration-500 hover:shadow-[0_8px_60px_rgba(0,0,0,0.35)]",
 								inView
-									? "opacity-100 translate-y-0"
-									: "opacity-0 translate-y-12",
+									? "translate-y-0 opacity-100"
+									: "translate-y-12 opacity-0",
 							)}
 							style={animate(600 + i * 110)}
 						>

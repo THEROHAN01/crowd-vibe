@@ -328,9 +328,15 @@
 
 /* ─── Score pulse ─── */
 @keyframes score-pop {
-	0% { transform: scale(1); }
-	40% { transform: scale(1.35); }
-	100% { transform: scale(1); }
+	0% {
+		transform: scale(1);
+	}
+	40% {
+		transform: scale(1.35);
+	}
+	100% {
+		transform: scale(1);
+	}
 }
 .animate-score-pop {
 	animation: score-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -338,14 +344,28 @@
 
 /* ─── Ambient blob drift ─── */
 @keyframes blob-drift-a {
-	0%, 100% { transform: translate(0%, 0%) scale(1); }
-	33% { transform: translate(6%, -10%) scale(1.07); }
-	66% { transform: translate(-5%, 7%) scale(0.94); }
+	0%,
+	100% {
+		transform: translate(0%, 0%) scale(1);
+	}
+	33% {
+		transform: translate(6%, -10%) scale(1.07);
+	}
+	66% {
+		transform: translate(-5%, 7%) scale(0.94);
+	}
 }
 @keyframes blob-drift-b {
-	0%, 100% { transform: translate(0%, 0%) scale(1); }
-	33% { transform: translate(-8%, 5%) scale(0.93); }
-	66% { transform: translate(6%, -9%) scale(1.06); }
+	0%,
+	100% {
+		transform: translate(0%, 0%) scale(1);
+	}
+	33% {
+		transform: translate(-8%, 5%) scale(0.93);
+	}
+	66% {
+		transform: translate(6%, -9%) scale(1.06);
+	}
 }
 .animate-blob-a {
 	animation: blob-drift-a 18s ease-in-out infinite;
@@ -355,54 +375,96 @@
 }
 @media (prefers-reduced-motion: reduce) {
 	.animate-blob-a,
-	.animate-blob-b { animation: none; }
+	.animate-blob-b {
+		animation: none;
+	}
 }
 
 /* ─── Phone glow pulse ─── */
 @keyframes phone-glow-pulse {
-	0%, 100% { opacity: 0.45; }
-	50% { opacity: 0.85; }
+	0%,
+	100% {
+		opacity: 0.45;
+	}
+	50% {
+		opacity: 0.85;
+	}
 }
 .animate-phone-glow {
 	animation: phone-glow-pulse 4s ease-in-out infinite;
 	will-change: opacity;
 }
 @media (prefers-reduced-motion: reduce) {
-	.animate-phone-glow { animation: none; opacity: 0.6; }
+	.animate-phone-glow {
+		animation: none;
+		opacity: 0.6;
+	}
 }
 
 /* ─── Floating badge ─── */
 @keyframes float-a {
-	0%, 100% { transform: translateY(0px) rotate(-1deg); }
-	50% { transform: translateY(-9px) rotate(1deg); }
+	0%,
+	100% {
+		transform: translateY(0px) rotate(-1deg);
+	}
+	50% {
+		transform: translateY(-9px) rotate(1deg);
+	}
 }
 @keyframes float-b {
-	0%, 100% { transform: translateY(0px) rotate(1deg); }
-	50% { transform: translateY(-7px) rotate(-1.5deg); }
+	0%,
+	100% {
+		transform: translateY(0px) rotate(1deg);
+	}
+	50% {
+		transform: translateY(-7px) rotate(-1.5deg);
+	}
 }
 @keyframes float-c {
-	0%, 100% { transform: translateY(0px) rotate(0.5deg); }
-	50% { transform: translateY(-11px) rotate(-0.5deg); }
+	0%,
+	100% {
+		transform: translateY(0px) rotate(0.5deg);
+	}
+	50% {
+		transform: translateY(-11px) rotate(-0.5deg);
+	}
 }
-.animate-float-a { animation: float-a 5s ease-in-out infinite; }
-.animate-float-b { animation: float-b 6.5s ease-in-out infinite; }
-.animate-float-c { animation: float-c 4.5s ease-in-out infinite; }
+.animate-float-a {
+	animation: float-a 5s ease-in-out infinite;
+}
+.animate-float-b {
+	animation: float-b 6.5s ease-in-out infinite;
+}
+.animate-float-c {
+	animation: float-c 4.5s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
 	.animate-float-a,
 	.animate-float-b,
-	.animate-float-c { animation: none; }
+	.animate-float-c {
+		animation: none;
+	}
 }
 
 /* ─── Slow ping (bento rings) ─── */
 @keyframes ping-slow {
-	0% { transform: scale(1); opacity: 0.5; }
-	100% { transform: scale(1.9); opacity: 0; }
+	0% {
+		transform: scale(1);
+		opacity: 0.5;
+	}
+	100% {
+		transform: scale(1.9);
+		opacity: 0;
+	}
 }
 .animate-ping-slow {
 	animation: ping-slow 2.2s ease-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-	.animate-ping-slow { animation: none; opacity: 0; }
+	.animate-ping-slow {
+		animation: none;
+		opacity: 0;
+	}
 }
 
 /* ─── Hero wavy underline ─── */

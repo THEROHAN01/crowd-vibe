@@ -1,7 +1,7 @@
 "use client";
-import { useState, useCallback } from "react";
-import { ChevronUp, ChevronDown, Wifi, Users } from "lucide-react";
 import { cn } from "@crowd-vibe/ui/lib/utils";
+import { ChevronDown, ChevronUp, Users, Wifi } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Reveal } from "@/components/ui/reveal";
 
 type Vote = "up" | "down" | null;
@@ -71,10 +71,7 @@ function EqBars() {
 				<div
 					// biome-ignore lint/suspicious/noArrayIndexKey: stable decorative list
 					key={i}
-					className={cn(
-						"w-[3px] rounded-full bg-accent animate-equalize",
-						h,
-					)}
+					className={cn("w-[3px] animate-equalize rounded-full bg-accent", h)}
 					style={{ animationDelay: delay }}
 				/>
 			))}
@@ -112,7 +109,7 @@ function SongCard({
 			{/* Rank badge */}
 			<span
 				className={cn(
-					"absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black",
+					"absolute -top-2 -left-2 flex h-5 w-5 items-center justify-center rounded-full font-black text-[9px]",
 					isTop
 						? "bg-accent text-accent-foreground shadow-[0_0_10px_color-mix(in_oklch,var(--accent)_60%,transparent)]"
 						: "bg-white/10 text-muted-foreground/60",
@@ -150,7 +147,7 @@ function SongCard({
 			{/* Score */}
 			<span
 				className={cn(
-					"w-9 text-center font-black tabular-nums text-lg leading-none transition-all duration-200",
+					"w-9 text-center font-black text-lg tabular-nums leading-none transition-all duration-200",
 					scoreColor,
 				)}
 			>
@@ -197,7 +194,7 @@ function PhoneShell({ children }: { children: React.ReactNode }) {
 			{/* Pulsing ambient glow */}
 			<div
 				aria-hidden="true"
-				className="animate-phone-glow pointer-events-none absolute -inset-6 rounded-[4rem]"
+				className="pointer-events-none absolute -inset-6 animate-phone-glow rounded-[4rem]"
 				style={{
 					background:
 						"radial-gradient(ellipse at 50% 60%, color-mix(in oklch, var(--primary) 28%, transparent) 0%, transparent 70%)",
@@ -207,7 +204,7 @@ function PhoneShell({ children }: { children: React.ReactNode }) {
 			{/* Secondary emerald glow */}
 			<div
 				aria-hidden="true"
-				className="animate-blob-b pointer-events-none absolute -bottom-4 -right-4 h-40 w-40 rounded-full opacity-20"
+				className="pointer-events-none absolute -right-4 -bottom-4 h-40 w-40 animate-blob-b rounded-full opacity-20"
 				style={{
 					background:
 						"radial-gradient(circle, color-mix(in oklch, var(--accent) 60%, transparent), transparent)",
@@ -246,7 +243,7 @@ function PhoneShell({ children }: { children: React.ReactNode }) {
 				{children}
 
 				{/* Home indicator */}
-				<div className="flex justify-center pb-2.5 pt-3">
+				<div className="flex justify-center pt-3 pb-2.5">
 					<div className="h-1 w-24 rounded-full bg-white/15" />
 				</div>
 			</div>
@@ -312,11 +309,14 @@ export function InteractiveDemo() {
 	const listeners = 47 + totalVotes * 3;
 
 	return (
-		<section id="demo" className="relative overflow-hidden bg-[oklch(0.06_0.025_280)] px-6 py-24 md:py-36">
+		<section
+			id="demo"
+			className="relative overflow-hidden bg-[oklch(0.06_0.025_280)] px-6 py-24 md:py-36"
+		>
 			{/* Ambient blobs */}
 			<div
 				aria-hidden="true"
-				className="animate-blob-a pointer-events-none absolute top-[-10%] left-[10%] h-[500px] w-[500px] rounded-full opacity-[0.07]"
+				className="pointer-events-none absolute top-[-10%] left-[10%] h-[500px] w-[500px] animate-blob-a rounded-full opacity-[0.07]"
 				style={{
 					background:
 						"radial-gradient(circle, color-mix(in oklch, var(--primary) 80%, transparent), transparent)",
@@ -325,7 +325,7 @@ export function InteractiveDemo() {
 			/>
 			<div
 				aria-hidden="true"
-				className="animate-blob-b pointer-events-none absolute bottom-[-5%] right-[5%] h-[400px] w-[400px] rounded-full opacity-[0.06]"
+				className="pointer-events-none absolute right-[5%] bottom-[-5%] h-[400px] w-[400px] animate-blob-b rounded-full opacity-[0.06]"
 				style={{
 					background:
 						"radial-gradient(circle, color-mix(in oklch, var(--accent) 80%, transparent), transparent)",
@@ -344,8 +344,7 @@ export function InteractiveDemo() {
 						Interactive demo
 					</div>
 					<h2 className="font-black font-heading text-[clamp(2.2rem,6vw,4.5rem)] text-foreground leading-[0.88] tracking-tighter">
-						Your crowd.{" "}
-						<span className="text-primary">Your queue.</span>
+						Your crowd. <span className="text-primary">Your queue.</span>
 					</h2>
 					<p className="mx-auto mt-5 max-w-md text-muted-foreground leading-relaxed">
 						Tap the arrows and watch scores shift. The top-ranked song plays
@@ -397,7 +396,7 @@ export function InteractiveDemo() {
 												<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 motion-safe:animate-ping" />
 												<span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
 											</span>
-											<span className="font-semibold text-accent text-[10px] uppercase tracking-widest">
+											<span className="font-semibold text-[10px] text-accent uppercase tracking-widest">
 												Now playing
 											</span>
 										</div>
@@ -416,7 +415,7 @@ export function InteractiveDemo() {
 											<p className="truncate font-semibold text-foreground text-xs leading-tight">
 												{NOW_PLAYING.title}
 											</p>
-											<p className="truncate text-muted-foreground/55 text-[10px]">
+											<p className="truncate text-[10px] text-muted-foreground/55">
 												{NOW_PLAYING.artist}
 											</p>
 										</div>
@@ -431,10 +430,10 @@ export function InteractiveDemo() {
 
 								{/* Queue header */}
 								<div className="mb-2.5 flex items-center justify-between">
-									<span className="font-semibold text-muted-foreground/50 text-[10px] uppercase tracking-widest">
+									<span className="font-semibold text-[10px] text-muted-foreground/50 uppercase tracking-widest">
 										Up next
 									</span>
-									<span className="text-muted-foreground/35 text-[10px]">
+									<span className="text-[10px] text-muted-foreground/35">
 										{songs.length} songs
 									</span>
 								</div>
@@ -451,7 +450,7 @@ export function InteractiveDemo() {
 									))}
 								</div>
 
-								<p className="mt-3 text-center text-muted-foreground/30 text-[10px]">
+								<p className="mt-3 text-center text-[10px] text-muted-foreground/30">
 									tap the arrows · highest score plays next
 								</p>
 							</div>
