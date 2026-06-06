@@ -14,9 +14,10 @@ interface Song {
 interface SongQueueProps {
 	songs: Song[];
 	myVotes: Map<string, number>;
+	sessionId: string;
 }
 
-export default function SongQueue({ songs, myVotes }: SongQueueProps) {
+export default function SongQueue({ songs, myVotes, sessionId }: SongQueueProps) {
 	if (songs.length === 0) {
 		return (
 			<div className="py-12 text-center">
@@ -54,6 +55,9 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
 								width={48}
 								height={48}
 								className="h-12 w-12 shrink-0 rounded-md object-cover"
+								onError={(e) => {
+									e.currentTarget.style.display = "none";
+								}}
 							/>
 						)}
 						<div className="min-w-0 flex-1">
@@ -67,16 +71,20 @@ export default function SongQueue({ songs, myVotes }: SongQueueProps) {
 						<div className="flex shrink-0 flex-col items-center">
 							<VoteButton
 								songId={song.id}
+								sessionId={sessionId}
 								direction="up"
 								isActive={myVote === 1}
+								myCurrentVote={myVote}
 							/>
 							<span className={`font-bold text-sm tabular-nums ${scoreClass}`}>
 								{song.score}
 							</span>
 							<VoteButton
 								songId={song.id}
+								sessionId={sessionId}
 								direction="down"
 								isActive={myVote === -1}
+								myCurrentVote={myVote}
 							/>
 						</div>
 					</div>
