@@ -1,6 +1,6 @@
 # CrowdVibe — Product Roadmap
 
-> Last updated: 2026-06-07  
+> Last updated: 2026-06-14  
 > Status key: ✅ Done · 🔧 In Progress · 📋 Planned · 💡 Future
 
 ---
@@ -47,13 +47,13 @@ Fix breaking UI issues identified in the June 2026 audit before any new feature 
 
 ---
 
-## Phase 2 — Venue Owner Experience
+## Phase 2 — Venue Owner Experience (In Progress)
 
 Tools that give venue owners more control and insight.
 
 | Item | Status | Priority | Notes |
 |---|---|---|---|
-| Venue settings admin UI | 📋 | P1 | Edit max suggestions, cooldown, skip threshold, explicit content — schema exists, no UI |
+| Venue settings admin UI | ✅ | P1 | Right-side Sheet drawer, 4 settings, server-side validation, blueprint styling |
 | Session history page | 📋 | P2 | View past sessions, songs played, peak listener count |
 | Manual queue reorder (drag-and-drop) | 📋 | P2 | Override crowd vote ordering |
 | Blacklist / block specific songs or artists | 📋 | P2 | Venue-level content control |
