@@ -46,7 +46,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 	}, [guestInfo.data?.votes]);
 
 	return (
-		<div className="relative mx-auto flex h-full w-full max-w-lg flex-col overflow-hidden">
+		<div className="relative mx-auto w-full max-w-lg">
 			{/* Session Ended Overlay */}
 			{sessionEnded && (
 				<div
@@ -65,29 +65,30 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 				</div>
 			)}
 
-			{/* Connection Lost Banner */}
-			{!connected && !sessionEnded && (
-				<div
-					role="status"
-					aria-live="polite"
-					className="flex items-center justify-center gap-2 bg-destructive/10 px-4 py-2 text-destructive text-sm"
-				>
-					<WifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
-					Connection lost — reconnecting…
-				</div>
-			)}
-
-			{/* Content — inert when session ended to block keyboard/pointer interaction */}
+			{/* Content — inert when session ended */}
 			{/* biome-ignore lint: inert is valid HTML but React types lag */}
 			<div
-				className={`flex flex-1 flex-col ${sessionEnded ? "pointer-events-none" : ""}`}
+				className={sessionEnded ? "pointer-events-none" : ""}
 				// @ts-expect-error — inert is a valid HTML attribute, React 19 types pending
 				inert={sessionEnded ? "" : undefined}
 			>
-				{/* Top Bar */}
-				<div className="flex items-center justify-between border-border border-b px-4 py-3">
-					<Logo size="sm" />
-					<LiveBadge />
+				{/* Sticky Top Bar */}
+				<div className="sticky top-0 z-10 border-border border-b bg-background/95 backdrop-blur-sm">
+					{/* Connection Lost Banner */}
+					{!connected && !sessionEnded && (
+						<div
+							role="status"
+							aria-live="polite"
+							className="flex items-center justify-center gap-2 bg-destructive/10 px-4 py-2 text-destructive text-sm"
+						>
+							<WifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+							Connection lost — reconnecting…
+						</div>
+					)}
+					<div className="flex items-center justify-between px-4 py-3">
+						<Logo size="sm" />
+						<LiveBadge />
+					</div>
 				</div>
 
 				{/* Now Playing Hero */}
@@ -97,11 +98,11 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 					</div>
 				</ErrorBoundary>
 
-				{/* Queue */}
+				{/* Queue — pb-24 ensures last item clears the sticky search bar */}
 				<ErrorBoundary>
-					<div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-						<h2 className="mb-2 font-semibold text-muted-foreground text-sm">
-							UP NEXT
+					<div className="px-4 pt-2 pb-24" aria-live="polite">
+						<h2 className="mb-2 font-semibold text-muted-foreground text-sm uppercase tracking-wide">
+							Up Next
 						</h2>
 						<SongQueue
 							songs={queue.data ?? []}
@@ -111,8 +112,8 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
 					</div>
 				</ErrorBoundary>
 
-				{/* Search & Add */}
-				<div className="border-t p-4">
+				{/* Sticky Bottom Search Trigger */}
+				<div className="sticky bottom-0 z-10 border-border border-t bg-background p-4">
 					<SongSearch sessionId={sessionId} />
 				</div>
 			</div>
