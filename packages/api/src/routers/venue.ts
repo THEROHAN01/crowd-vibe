@@ -2,6 +2,8 @@ import prisma from "@crowd-vibe/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../index";
+import type { VenueSettings } from "../lib/settings";
+import { parseVenueSettings, VenueSettingsSchema } from "../lib/settings";
 
 export const venueRouter = router({
 	create: protectedProcedure
@@ -79,8 +81,32 @@ export const venueRouter = router({
 			});
 		}),
 
+	updateSettings: protectedProcedure
+		.input(z.object({ id: z.string(), settings: z.unknown() }))
+		.mutation(async ({ ctx, input }) => {
+			let parsed: VenueSettings;
+			try {
+				parsed = VenueSettingsSchema.parse(input.settings);
+			} catch (err) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Invalid settings values.",
+					cause: err,
+				});
+			}
+			const venue = await prisma.venue.findUnique({ where: { id: input.id } });
+			if (!venue || venue.ownerId !== ctx.user.id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Venue not found" });
+			}
+			await prisma.venue.update({
+				where: { id: input.id },
+				data: { settings: parsed },
+			});
+			return { success: true } as const;
+		}),
+
 	listMine: protectedProcedure.query(async ({ ctx }) => {
-		return prisma.venue.findMany({
+		const venues = await prisma.venue.findMany({
 			where: { ownerId: ctx.user.id },
 			take: 10,
 			include: {
@@ -91,5 +117,9 @@ export const venueRouter = router({
 			},
 			orderBy: { createdAt: "desc" },
 		});
+		return venues.map((v) => ({
+			...v,
+			settings: parseVenueSettings(v.settings),
+		}));
 	}),
 });

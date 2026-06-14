@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const VenueSettingsSchema = z.object({
-	maxSuggestionsPerGuest: z.number().default(5),
-	suggestionCooldownSec: z.number().default(30),
-	downvoteSkipThreshold: z.number().default(-3),
+	maxSuggestionsPerGuest: z.number().int().min(1).max(20).default(5),
+	suggestionCooldownSec: z.number().int().min(0).max(300).default(30),
+	downvoteSkipThreshold: z.number().int().min(-20).max(-1).default(-3),
 	allowExplicitContent: z.boolean().default(true),
 });
 

@@ -4,7 +4,7 @@ import { Button } from "@crowd-vibe/ui/components/button";
 import { Input } from "@crowd-vibe/ui/components/input";
 import { Skeleton } from "@crowd-vibe/ui/components/skeleton";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, Music, Users } from "lucide-react";
+import { Loader2, Music, Settings2, Users } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ interface SessionDashboardProps {
 	joinCode: string;
 	sessionName: string | null;
 	onSessionEnded: () => void;
+	onOpenSettings: () => void;
 }
 
 export default function SessionDashboard({
@@ -32,6 +33,7 @@ export default function SessionDashboard({
 	joinCode,
 	sessionName,
 	onSessionEnded,
+	onOpenSettings,
 }: SessionDashboardProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -126,18 +128,28 @@ export default function SessionDashboard({
 						<p className="text-muted-foreground">{sessionName}</p>
 					)}
 				</div>
-				<Button
-					variant="destructive"
-					size="sm"
-					onClick={() => endSession.mutate({ sessionId })}
-					disabled={endSession.isPending}
-				>
-					{endSession.isPending ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
-					) : (
-						"End Session"
-					)}
-				</Button>
+				<div className="flex items-center gap-2">
+					<button
+						type="button"
+						onClick={onOpenSettings}
+						aria-label="Venue settings"
+						className="flex h-11 w-11 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+					>
+						<Settings2 className="h-4 w-4" aria-hidden="true" />
+					</button>
+					<Button
+						variant="destructive"
+						size="sm"
+						onClick={() => endSession.mutate({ sessionId })}
+						disabled={endSession.isPending}
+					>
+						{endSession.isPending ? (
+							<Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+						) : (
+							"End Session"
+						)}
+					</Button>
+				</div>
 			</div>
 
 			{/* Stats */}
@@ -195,7 +207,10 @@ export default function SessionDashboard({
 										disabled={skipSong.isPending}
 									>
 										{skipSong.isPending ? (
-											<Loader2 className="h-3 w-3 animate-spin" />
+											<Loader2
+												className="h-3 w-3 animate-spin"
+												aria-hidden="true"
+											/>
 										) : (
 											"Skip"
 										)}
@@ -291,7 +306,7 @@ export default function SessionDashboard({
 							}
 						>
 							{addSong.isPending ? (
-								<Loader2 className="h-3 w-3 animate-spin" />
+								<Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
 							) : (
 								"Add"
 							)}
