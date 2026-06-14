@@ -1,6 +1,7 @@
 # UI-BREAKING-009: Vote Buttons Have No Optimistic Update — Lag Makes UI Feel Broken
 
 **Severity:** P2 — MEDIUM  
+**Status:** ✅ RESOLVED — commits `bd26d30` (sessionId threading) + `76b6e8c` (optimistic update + rollback in VoteButton)  
 **Area:** UI / Guest Session  
 **File:** `apps/web/src/components/session/song-queue.tsx`
 

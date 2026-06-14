@@ -8,9 +8,9 @@ import {
 	SheetTrigger,
 } from "@crowd-vibe/ui/components/sheet";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { queryClient, trpc } from "@/utils/trpc";
 
@@ -87,6 +87,11 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 					{searchResults.isLoading && (
 						<p className="text-center text-muted-foreground">Searching...</p>
 					)}
+					{searchResults.isError && (
+						<p className="text-center text-destructive text-sm">
+							Search failed. Try again.
+						</p>
+					)}
 					{searchResults.data?.tracks.map((track) => (
 						<div
 							key={track.providerId}
@@ -119,7 +124,13 @@ export default function SongSearch({ sessionId }: { sessionId: string }) {
 									suggestSong.isPending || suggestionsUsed >= maxSuggestions
 								}
 							>
-								{suggestionsUsed >= maxSuggestions ? "Limit" : "Add"}
+								{suggestSong.isPending ? (
+									<Loader2 className="h-3 w-3 animate-spin" />
+								) : suggestionsUsed >= maxSuggestions ? (
+									"Limit"
+								) : (
+									"Add"
+								)}
 							</Button>
 						</div>
 					))}

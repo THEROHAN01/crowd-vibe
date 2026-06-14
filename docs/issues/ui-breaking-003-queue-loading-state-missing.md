@@ -1,6 +1,7 @@
 # UI-BREAKING-003: Queue Renders Empty Instead of Loading State While Fetching
 
 **Severity:** P2 — MEDIUM  
+**Status:** ✅ RESOLVED — commit `e478de3`  
 **Area:** UI / Owner Dashboard  
 **File:** `apps/web/src/components/venue/session-dashboard.tsx` (line 247)
 

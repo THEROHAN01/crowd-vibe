@@ -1,6 +1,7 @@
 # UI-BREAKING-008: Guest Session View Has No Error Boundary — Single Error Crashes Entire Page
 
 **Severity:** P1 — HIGH  
+**Status:** ✅ RESOLVED — commits `5e78fa5` (ErrorBoundary component) + `7f1f625` (session-view wrappers)  
 **Area:** UI / Guest Session  
 **File:** `apps/web/src/components/session/session-view.tsx`
 

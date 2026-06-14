@@ -1,6 +1,7 @@
 # UI-BREAKING-004: Guest Suggest Song Mutation Has No onError Handler
 
 **Severity:** P2 — MEDIUM  
+**Status:** ✅ RESOLVED — was already present in code at audit time (onError handler existed at lines 46–48)  
 **Area:** UI / Guest Session  
 **File:** `apps/web/src/components/session/song-search.tsx` (lines 38–50)
 

@@ -1,6 +1,7 @@
 # UI-BREAKING-002: Owner Dashboard Queue, Stats, and Now-Playing Queries Have No Error Handling
 
 **Severity:** P1 — HIGH  
+**Status:** ✅ RESOLVED — commit `e478de3`  
 **Area:** UI / Owner Dashboard  
 **File:** `apps/web/src/components/venue/session-dashboard.tsx` (lines 44–48)
 

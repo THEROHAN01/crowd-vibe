@@ -27,22 +27,22 @@ Core infrastructure and the end-to-end happy path.
 
 ---
 
-## Phase 1 — Stability & Polish (Current Sprint)
+## Phase 1 — Stability & Polish (Complete)
 
 Fix breaking UI issues identified in the June 2026 audit before any new feature work.
 
 | Item | Status | Priority | Issue Ref |
 |---|---|---|---|
-| Owner dashboard search: add loading + error states | 📋 | P1 | ui-breaking-001 |
-| Owner dashboard queue/stats/now-playing: add error handling | 📋 | P1 | ui-breaking-002 |
-| Owner dashboard: guard for ended/non-existent sessions | 📋 | P1 | ui-breaking-010 |
-| Guest session view: add React Error Boundary | 📋 | P1 | ui-breaking-008 |
-| Queue: show loading skeleton instead of empty state | 📋 | P2 | ui-breaking-003 |
-| Guest suggest song: add onError toast handler | 📋 | P2 | ui-breaking-004 |
-| Vote buttons: add optimistic updates | 📋 | P2 | ui-breaking-009 |
-| Add song button: disable + show spinner while pending | 📋 | P2 | ui-breaking-007 |
-| SSE disconnection: surface connection status to users | 📋 | P2 | ui-breaking-005 |
-| Song thumbnails: add onError fallback image | 📋 | P2 | ui-breaking-006 |
+| Owner dashboard search: add loading + error states | ✅ | P1 | ui-breaking-001 |
+| Owner dashboard queue/stats/now-playing: add error handling | ✅ | P1 | ui-breaking-002 |
+| Owner dashboard: guard for ended/non-existent sessions | ✅ | P1 | ui-breaking-010 |
+| Guest session view: add React Error Boundary | ✅ | P1 | ui-breaking-008 |
+| Queue: show loading skeleton instead of empty state | ✅ | P2 | ui-breaking-003 |
+| Guest suggest song: add onError toast handler | ✅ | P2 | ui-breaking-004 |
+| Vote buttons: add optimistic updates | ✅ | P2 | ui-breaking-009 |
+| Add song button: disable + show spinner while pending | ✅ | P2 | ui-breaking-007 |
+| SSE disconnection: surface connection status to users | ✅ | P2 | ui-breaking-005 |
+| Song thumbnails: add onError fallback image | ✅ | P2 | ui-breaking-006 |
 | Fix existing audit issues (schema, indexes, perf) | 📋 | P2 | audit-001 → perf-020 |
 
 ---
@@ -134,5 +134,4 @@ Features that improve guest engagement and delight.
 | Spotify provider | All methods throw — `packages/api/src/music/providers/spotify.ts` |
 | Polar payments UI | Config in `packages/auth/src/index.ts`, no user-facing flow |
 | Rate limiter reset on deploy | In-memory only — `packages/api/src/lib/rate-limiter.ts` |
-| No React Error Boundaries | Session views can white-screen on unhandled errors |
-| SSE no reconnect replay | Clients refetch on reconnect but miss events during gap |
+| SSE reconnect misses in-flight events | Clients refetch on reconnect but miss events fired during gap |

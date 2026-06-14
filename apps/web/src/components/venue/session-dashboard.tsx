@@ -57,6 +57,9 @@ export default function SessionDashboard({
 			onSuccess: () => {
 				queryClient.invalidateQueries();
 			},
+			onError: (err) => {
+				toast.error(err.message);
+			},
 		}),
 	);
 	const skipSong = useMutation(
@@ -64,11 +67,17 @@ export default function SessionDashboard({
 			onSuccess: () => {
 				queryClient.invalidateQueries();
 			},
+			onError: (err) => {
+				toast.error(err.message);
+			},
 		}),
 	);
 	const endSession = useMutation(
 		trpc.session.end.mutationOptions({
 			onSuccess: onSessionEnded,
+			onError: (err) => {
+				toast.error(err.message);
+			},
 		}),
 	);
 	const addSong = useMutation(

@@ -1,6 +1,7 @@
 # UI-BREAKING-010: Owner Dashboard Has No Guard for Ended/Non-Existent Sessions
 
 **Severity:** P1 — HIGH  
+**Status:** ✅ RESOLVED — pre-existing fix confirmed: `dashboard.tsx` gates on `venue.sessions?.[0]` where `listMine` filters `isActive: true`; ended sessions fall away on `onSessionEnded → venues.refetch()`  
 **Area:** UI / Owner Dashboard  
 **File:** `apps/web/src/app/(app)/(venue)/dashboard/page.tsx`, `apps/web/src/components/venue/session-dashboard.tsx`
 

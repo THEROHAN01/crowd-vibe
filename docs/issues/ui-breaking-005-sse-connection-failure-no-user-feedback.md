@@ -1,6 +1,7 @@
 # UI-BREAKING-005: SSE Connection Failures Give Users No Feedback
 
 **Severity:** P2 — MEDIUM  
+**Status:** ✅ RESOLVED — commits `eda38cb` (hook) + `7f1f625` (banner in session-view)  
 **Area:** UI / Realtime / Guest + Owner  
 **File:** `apps/web/src/hooks/use-session-events.ts` (lines 107–111)
 

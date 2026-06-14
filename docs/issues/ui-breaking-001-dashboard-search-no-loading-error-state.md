@@ -1,6 +1,7 @@
 # UI-BREAKING-001: Owner Dashboard Search Has No Loading or Error State
 
 **Severity:** P1 — HIGH  
+**Status:** ✅ RESOLVED — commit `e478de3`  
 **Area:** UI / Owner Dashboard  
 **File:** `apps/web/src/components/venue/session-dashboard.tsx` (lines 49–53, 211–242)
 

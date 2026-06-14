@@ -42,14 +42,18 @@ export function useSessionEvents(
 ): { connected: boolean } {
 	const handlersRef = useRef(handlers);
 	handlersRef.current = handlers;
-	const [connected, setConnected] = useState(true);
+	const [connected, setConnected] = useState(false);
+	const hasEverConnected = useRef(false);
 
 	useEffect(() => {
 		if (!sessionId) return;
 
 		const eventSource = new EventSource(`/api/sse/${sessionId}`);
 
-		eventSource.onopen = () => setConnected(true);
+		eventSource.onopen = () => {
+			hasEverConnected.current = true;
+			setConnected(true);
+		};
 
 		eventSource.addEventListener("vote_changed", (e) => {
 			const data = safeParse(e.data);
@@ -108,7 +112,7 @@ export function useSessionEvents(
 
 		eventSource.onerror = () => {
 			if (eventSource.readyState === EventSource.CONNECTING) {
-				setConnected(false);
+				if (hasEverConnected.current) setConnected(false);
 				handlersRef.current.onReconnect?.();
 			} else if (eventSource.readyState === EventSource.CLOSED) {
 				setConnected(false);

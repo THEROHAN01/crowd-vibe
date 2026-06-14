@@ -1,6 +1,7 @@
 # UI-BREAKING-007: Add Song Button Has No Pending/Disabled State During Mutation
 
 **Severity:** P2 — MEDIUM  
+**Status:** ✅ RESOLVED — commit `e478de3`  
 **Area:** UI / Owner Dashboard  
 **File:** `apps/web/src/components/venue/session-dashboard.tsx` (lines 74–84)
 
